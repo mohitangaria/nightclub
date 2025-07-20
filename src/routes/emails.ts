@@ -1,13 +1,13 @@
 import {Common,Joi} from "../config/routeImporter" ;
 import {authorizedheaders,headers,options,validator,respmessage,resp400,resp500} from "../validators/global" 
-import * as emails from "../controllers/emails" ;
-const {
+import * as emails from "../controllers/email" ;
+import {
     emailTemplateRequest,
     emailTemplteIdentity,
     emailTemplate,
 	emailTemplateListRequest,
 	emailTemplateStatusRequest
-}=require("../validators/emails")
+} from "../validators/emails";
 module.exports=[ 
     {
 		method : "POST",

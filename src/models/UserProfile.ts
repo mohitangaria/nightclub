@@ -1,9 +1,9 @@
 "use strict";
 import { sequelize } from '.';
-import { Model, Optional,DataTypes } from 'sequelize';
-import {UserProfileInterface} from '../config/interfaces'
+import { Model, Optional, DataTypes } from 'sequelize';
+import { UserProfileInterface } from '../config/interfaces/users'
 
-interface UserProfileInstance extends Model<UserProfileInterface>,UserProfileInterface{}
+interface UserProfileInstance extends Model<UserProfileInterface>, UserProfileInterface { }
 
 const UserProfile = sequelize.define<UserProfileInstance>(
     "UserProfile",
@@ -14,17 +14,24 @@ const UserProfile = sequelize.define<UserProfileInstance>(
             autoIncrement: true,
             allowNull: false
         },
-        userId: { type: DataTypes.INTEGER, allowNull: false, unique:'user-profile',comment: "User ref id" },
-        name: { type: DataTypes.STRING, allowNull: true, defaultValue:null,comment: "User  name"},
-        imageId: { type: DataTypes.INTEGER, allowNull: true, defaultValue:null,comment: "User Profile image"}
+        userId: { type: DataTypes.INTEGER, allowNull: false, unique: 'user-profile', comment: "User ref id" },
+        name: { type: DataTypes.STRING, allowNull: true, defaultValue: null, comment: "User  name" },
+        attachmentId: { type: DataTypes.INTEGER, allowNull: true, defaultValue: null, comment: "User Profile image" },
+        referralCode: { type: DataTypes.STRING, allowNull: true, defaultValue: null, comment: "Refferal code of the user" }
     },
     {
         paranoid: true,
         underscored: true,
-        tableName: "users_profile",
-        indexes:[
-            
+        tableName: "user_profiles",
+        indexes: [
+            { name: 'id', fields: ['id'] },
+            { name: 'name', fields: ['name'] },
         ]
     }
 );
+
+UserProfile.addHook('beforeCreate', (userProfile: UserProfileInstance) => {
+    userProfile.referralCode = `REF-${userProfile.userId}`;
+});
+
 export default UserProfile;

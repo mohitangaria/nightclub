@@ -1,4 +1,4 @@
-import {Joi,Common,_} from '../config/routeImporter';
+import { Joi, Common, _ } from '../config/routeImporter';
 
 const attachment: Joi.ObjectSchema = Joi.object().keys({
     id: Joi.number().example(1).description("Unique identifier for the file"),
@@ -25,12 +25,12 @@ const uploadResponse: Joi.ObjectSchema = Joi.object().keys({
 }).label('upload-response').description('Upload attachment response');
 
 const getSignedUrl: Joi.ObjectSchema = Joi.object().keys({
-    fileName: Joi.string().required().error(errors =>{
-         return Common.routeError(errors, 'FILE_NAME_IS_REQUIRED') }).description("Name of file required to be uploaded"),
+    fileName: Joi.string().required().error(errors => {
+        return Common.routeError(errors, 'FILE_NAME_IS_REQUIRED')
+    }).description("Name of file required to be uploaded"),
     encryptDataFlag: Joi.boolean().default(false).example(false).optional().allow(null).description('If document is to be encrypted'),
     fileSize: Joi.number().optional().allow(null).default(0)
 }).label("get-signed-url").description("Get signed url from server for S3 bucket");
-
 
 const decryptDataRequest: Joi.ObjectSchema = Joi.object().keys({
     uniqueName: Joi.string().required().error(errors => { return Common.routeError(errors, 'FILE_NAME_IS_REQUIRED') }).description("Unique name of file is required"),

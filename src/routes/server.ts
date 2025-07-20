@@ -1,13 +1,13 @@
 'use strict';
 import * as server from "../controllers/server";
-import {resp400,resp500} from "../validators/global" 
-import {status} from "../validators/server";
+import { resp400, resp500 } from "../validators/global"
+import { status } from "../validators/server";
 module.exports = [
     {
         method: 'GET',
         path: '/',
-        handler:server.status,
-        options:{
+        handler: server.status,
+        options: {
             tags: [
                 "api", "Server"
             ],

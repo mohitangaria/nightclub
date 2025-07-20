@@ -1,5 +1,6 @@
 import Hapi from "@hapi/hapi";
-import { Models, Sequelize, sequelize } from '../models';
+import { Models, sequelize } from '../models';
+import { Sequelize, Op } from "../config/dbImporter";
 import * as Common from "./common"
 
 const getAppVersion = async (request: Hapi.RequestQuery, h: Hapi.ResponseToolkit) => {
@@ -8,7 +9,7 @@ const getAppVersion = async (request: Hapi.RequestQuery, h: Hapi.ResponseToolkit
             attributes: [
                 'ios_soft_update', 'ios_critical_update', 'android_soft_update', 'android_critical_update'
             ],
-            where: { id: 1 }
+            where: { id: { [Op.gt]: 0 } }
         });
         let responseObject = JSON.parse(JSON.stringify(appVersion));
         return h.response({ message: request.i18n.__("APP_VERSION_INFORMATION"), responseData: responseObject }).code(200)
@@ -26,18 +27,17 @@ const setAppVersion = async (request: Hapi.RequestQuery, h: Hapi.ResponseToolkit
         let versionData = {
             ios_soft_update: ios_soft_update, ios_critical_update: ios_critical_update, android_soft_update: android_soft_update, android_critical_update: android_critical_update
         }
-        const existingRecord = await Models.AppVersion.findOne({ where: { id: 1 } });
+        const existingRecord = await Models.AppVersion.findOne({ where: { id: { [Op.gt]: 0 } } });
         if (existingRecord) {
             await existingRecord.update(versionData, { transaction: transaction });
         } else {
-            await Models.AppVersion.create({ id: 1, ...versionData }, { transaction: transaction });
+            await Models.AppVersion.create({ ...versionData }, { transaction: transaction });
         }
-        
         let appVersion = await Models.AppVersion.findOne({
             attributes: [
                 'ios_soft_update', 'ios_critical_update', 'android_soft_update', 'android_critical_update'
             ],
-            where: { id: 1, }, transaction
+            where: { id: { [Op.gt]: 0 } }, transaction
         });
         let responseObject;
         if (appVersion) {
@@ -51,7 +51,7 @@ const setAppVersion = async (request: Hapi.RequestQuery, h: Hapi.ResponseToolkit
         }
         else {
             await transaction.rollback();
-            return Common.generateError(request, 400, 'ERROR_IN_UPDATING_DATA',{});
+            return Common.generateError(request, 400, 'ERROR_IN_UPDATING_DATA', {});
         }
     } catch (err: unknown) {
         await transaction.rollback();

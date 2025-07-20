@@ -1,102 +1,135 @@
-import {Joi,Common,_} from "../config/routeImporter";
-import {userObject,categoryObject,parenetCategory,categoryTypeObject,attachmentObject} from "./relations";
+import { Joi, Common, _ } from "../config/routeImporter";
+import { userObject, categoryObject, parenetCategory, categoryTypeObject, attachmentObject } from "./relations";
 
-const categoryRequest:  Joi.ObjectSchema = Joi.object().keys({
-    name: Joi.string().trim().required().error(errors=>{return Common.routeError(errors,'CATEGORY_NAME_IS_REQUIRED')}).example("Category name").description('Category name (must be unique for category type)'),
-    categorytypeCode: Joi.string().trim().required().error(errors=>{return Common.routeError(errors,'CATEGORY_TYPE_CODE_IS_REQUIRED')}).example(1).description('permission,post,page,directory'),
+const categoryRequest: Joi.ObjectSchema = Joi.object().keys({
+    name: Joi.string().trim().required().error(errors => { return Common.routeError(errors, 'CATEGORY_NAME_IS_REQUIRED') }).example("Category name").description('Category name (must be unique for category type)'),
+    categoryTypeCode: Joi.string().trim().required().error(errors => { return Common.routeError(errors, 'CATEGORY_TYPE_CODE_IS_REQUIRED') }).example(1).description('permission,post,page,directory'),
     parentId: Joi.number().example(1).description('Select parent category id (default is null)').optional().allow(null).default(null),
-    imageId:Joi.number().optional().allow(null).example(1).description('Attachment id to be associated with category').default(null)
+    imageId: Joi.number().optional().allow(null).example(1).description('Attachment id to be associated with category').default(null)
 }).label('category-request').description('Create object for category')
 
-const directoryRequest:  Joi.ObjectSchema = Joi.object().keys({
-    name: Joi.string().trim().required().error(errors=>{return Common.routeError(errors,'DIRECTORY_NAME_IS_REQUIRED')}).example("Directory name").description('Directory name (must be unique for with in a directory)'),
-    categorytypeCode: Joi.string().trim().optional().default('directory').valid('directory'),
+const directoryRequest: Joi.ObjectSchema = Joi.object().keys({
+    name: Joi.string().trim().required().error(errors => { return Common.routeError(errors, 'DIRECTORY_NAME_IS_REQUIRED') }).example("Directory name").description('Directory name (must be unique for with in a directory)'),
+    categoryTypeCode: Joi.string().trim().optional().default('directory').valid('directory'),
     parentId: Joi.number().example(1).description('Select parent directory id (default is null)').optional().allow(null).default(null),
-    imageId:Joi.number().optional().allow(null).example(1).description('Attachment id to be associated with directory').default(null)
+    imageId: Joi.number().optional().allow(null).example(1).description('Attachment id to be associated with directory').default(null)
 }).label('category-request').description('Create object for category')
 
-const myDirectoriesRequest:  Joi.ObjectSchema = Joi.object().keys({
+const myDirectoriesRequest: Joi.ObjectSchema = Joi.object().keys({
     categoryTypeCode: Joi.string().trim().optional().default('directory').valid('directory'),
 }).label('my-directories-request').description('Request to get all account directories')
 
-const directorySummary:  Joi.ObjectSchema = Joi.object().keys({
-    id:Joi.number().example(1).description("Unique identifier for the category type"),
-    name:Joi.string().example("Category type name").description('Define the group type title'),
+const directorySummary: Joi.ObjectSchema = Joi.object().keys({
+    id: Joi.number().example(1).description("Unique identifier for the category type"),
+    name: Joi.string().example("Category type name").description('Define the group type title'),
 }).label('directory-summary').description('Directory summary object')
 
-const myDirectoriesResponse:  Joi.ObjectSchema = Joi.object().keys({
-    message:Joi.string().example("Request status message").description("Message to confirm the operation"),
-    responseData:Joi.array().items(directorySummary).min(0).label('categories-listing').description('Array of category objects')
+const myDirectoriesResponse: Joi.ObjectSchema = Joi.object().keys({
+    message: Joi.string().example("Request status message").description("Message to confirm the operation"),
+    responseData: Joi.array().items(directorySummary).min(0).label('categories-listing').description('Array of category objects')
 }).label('category-response').description('Category operation response object')
 
-const categoryIdentity:  Joi.ObjectSchema = Joi.object().keys({
-    id:Joi.number().required().example(1).description("Unique identifier for the category"),
+const categoryIdentity: Joi.ObjectSchema = Joi.object().keys({
+    id: Joi.number().required().example(1).description("Unique identifier for the category"),
 }).label('category-identiry').description('Identifier for the content type')
 
-const categoryTypeIdentity:  Joi.ObjectSchema = Joi.object().keys({
-    categoryTypeCode:Joi.string().required().example(1).description("Unique identifier for the category type (Code of category type)"),
+const categoryTypeIdentity: Joi.ObjectSchema = Joi.object().keys({
+    categoryTypeCode: Joi.string().required().example(1).description("Unique identifier for the category type (Code of category type)"),
 }).label('category-type-identiry').description('Identifier for the category type')
 
-const category:  Joi.ObjectSchema = Joi.object().keys({
-    id:Joi.number().example(1).description("Unique identifier for the category type"),
-    code:Joi.string().example('category-code').description("Category code generated by system"),
-    name:Joi.string().example("Category type name").description('Define the group type title'),
-    categoryImage:attachmentObject.allow(null),
-    categorytype:categoryTypeObject,
-    level:Joi.number().example(1).description('level'),
-    parent:categoryObject.allow(null),
-    author:userObject.allow(null),
-    updatedBy:userObject.allow(null),
-    status:Joi.number().example(1).valid(0,1).description("Activation status"),
-    isRevision:Joi.boolean().example(true).allow(null).description("If the entry is stored as revision or not"),
-    revisionId:Joi.number().example(1).allow(null).description("Ref to the revision entity"),
-    createdAt:Joi.date().example("2023-01-02T12:18:55.000Z").description("creation date"),
-    updatedAt:Joi.date().example("2023-01-02T12:18:55.000Z").description("last update date")
+const category: Joi.ObjectSchema = Joi.object().keys({
+    id: Joi.number().example(1).description("Unique identifier for the category type"),
+    code: Joi.string().example('category-code').description("Category code generated by system"),
+    name: Joi.string().example("Category type name").description('Define the group type title'),
+    categoryImage: attachmentObject.allow(null),
+    categorytype: categoryTypeObject,
+    level: Joi.number().example(1).description('level'),
+    parent: categoryObject.allow(null),
+    author: userObject.allow(null),
+    updatedBy: userObject.allow(null),
+    status: Joi.number().example(1).valid(0, 1).description("Activation status"),
+    isRevision: Joi.boolean().example(true).allow(null).description("If the entry is stored as revision or not"),
+    revisionId: Joi.number().example(1).allow(null).description("Ref to the revision entity"),
+    createdAt: Joi.date().example("2023-01-02T12:18:55.000Z").description("creation date"),
+    updatedAt: Joi.date().example("2023-01-02T12:18:55.000Z").description("last update date")
 }).label('category').description('Category object')
 
 
 
-const categoryResponse:  Joi.ObjectSchema = Joi.object().keys({
-    message:Joi.string().example("Request status message").description("Message to confirm the operation"),
-    responseData:category
+const categoryResponse: Joi.ObjectSchema = Joi.object().keys({
+    message: Joi.string().example("Request status message").description("Message to confirm the operation"),
+    responseData: category
 }).label('category-response').description('Category operation response object')
 
 
-const categoryDeletedObj = category.keys({deletedAt:Joi.date().example("2023-01-02T12:18:55.000Z").description("Date when record was deleted"),}).label('deleted-category').description('Deleted models for category');
+const categoryDeletedObj = category.keys({ deletedAt: Joi.date().example("2023-01-02T12:18:55.000Z").description("Date when record was deleted"), }).label('deleted-category').description('Deleted models for category');
 
-const categoryDeleteResponse:  Joi.ObjectSchema = Joi.object().keys({
-    message:Joi.string().example("Request status message").description("Message to confirm the operation"),
-    responseData:categoryDeletedObj
+const categoryDeleteResponse: Joi.ObjectSchema = Joi.object().keys({
+    message: Joi.string().example("Request status message").description("Message to confirm the operation"),
+    responseData: categoryDeletedObj
 }).label('category-delete-response').description('Category operation response object')
 
-const categoriesResponse:  Joi.ObjectSchema = Joi.object().keys({
-    message:Joi.string().example("Request status message").description("Message to confirm the operation"),
-    responseData:Joi.array().items(category).min(0).label('categories-listing').description('Array of category objects')
+const categoriesResponse: Joi.ObjectSchema = Joi.object().keys({
+    message: Joi.string().example("Request status message").description("Message to confirm the operation"),
+    responseData: Joi.array().items(category).min(0).label('categories-listing').description('Array of category objects')
 }).label('categories-response').description('List of all categories in array format')
 
-const listCategoryRequest:  Joi.ObjectSchema = Joi.object().keys({
-    page:Joi.number().optional().min(1).default(1),
-    parentId:Joi.number().optional().default(null),
-    perPage:Joi.number().optional().min(1).default(process.env.PAGINATION_LIMIT),
-    type:Joi.string().required().error(errors=>{return Common.routeError(errors,'CATEGORY_TYPE_IS_REQUIRED')}).example('post,page,directory,permission').description("Type of category to be listed"),
-    showRevisions:Joi.boolean().optional().default(false).valid(true,false).example(false).description("If request is to list all category types or revisions of a category. For revisions id is required parameter"),
+const listCategoryRequest: Joi.ObjectSchema = Joi.object().keys({
+    searchText: Joi.string().trim().optional().allow(null).description("Search Text"),
+    page: Joi.number().optional().min(1).default(1),
+    parentId: Joi.number().integer().optional().default(null),
+    perPage: Joi.number().integer().optional().min(1).default(+process.env.PAGINATION_LIMIT!),
+    type: Joi.string().required().error(errors => { return Common.routeError(errors, 'CATEGORY_TYPE_IS_REQUIRED') }).example('post,page,directory,permission').description("Type of category to be listed"),
+    showRevisions: Joi.boolean().optional().default(false).valid(true, false).example(false).description("If request is to list all category types or revisions of a category. For revisions id is required parameter"),
 }).label('category-list-request').description('Category list request with filters')
 
-const listCategoryResponse:  Joi.ObjectSchema = Joi.object().keys({
-    message:Joi.string().example("Request status message").description("Message to confirm the operation"),
-    responseData:Joi.object().keys({
-        parentHirarchy:Joi.array().items(parenetCategory).min(0).description('Array of parent objects'),
-        data:Joi.array().items(category).min(0).description('Array of category type objects'),
-        perPage:Joi.number().example(1).description("Number or required in response"),
-        page:Joi.number().example(1).description("page no for which data is requested"),
-        totalPages:Joi.number().example(1).description("Total number of pages response set will generate")
+const listCategoryResponse: Joi.ObjectSchema = Joi.object().keys({
+    message: Joi.string().example("Request status message").description("Message to confirm the operation"),
+    responseData: Joi.object().keys({
+        parentHirarchy: Joi.array().items(parenetCategory).min(0).description('Array of parent objects'),
+        data: Joi.array().items(category).min(0).description('Array of category type objects'),
+        perPage: Joi.number().integer().example(1).description("Number or required in response"),
+        page: Joi.number().example(1).description("page no for which data is requested"),
+        totalPages: Joi.number().example(1).description("Total number of pages response set will generate"),
+        totalRecords: Joi.number().example(35).description("Total number of pages response set will generate")
     }).label('category-list-responseData').description('Category list response data object')
 }).label('category-list-response').description('Category list response')
 
-const categoryStatusRequest :  Joi.ObjectSchema =  Joi.object().keys({
-    status:Joi.boolean().required().error(errors=>{return Common.routeError(errors,'CATEGORY_STATUS_IS_REQUIRED')}).valid(true,false).description("Status of the category type")
+const categoryStatusRequest: Joi.ObjectSchema = Joi.object().keys({
+    status: Joi.boolean().required().error(errors => { return Common.routeError(errors, 'CATEGORY_STATUS_IS_REQUIRED') }).valid(true, false).description("Status of the category type")
 }).label('category-status-request').description("Request to update the status of the category")
-export{
+
+const attributeOptions: Joi.ObjectSchema = Joi.object().keys({
+    id: Joi.number().example("12").description('Id of the attribute option'),
+    isDeleted: Joi.boolean().example("true").description('If this attribute option needs to be deleted'),
+    name: Joi.string().example("Category type name").description('Define the group type title'),
+}).label('category-attribute-option').description('Category attribute option')
+
+const categoryAttributeRequest: Joi.ObjectSchema = Joi.object().keys({
+    name: Joi.string().trim().required().error(errors => { return Common.routeError(errors, 'ATTRIBUTE_NAME_IS_REQUIRED') }).example("Color").description('It must be unique for attributes in a category'),
+    categoryId: Joi.number().required().error(errors => { return Common.routeError(errors, 'CATEGORY_ID_IS_REQUIRED') }).example(1).description('Select parent category id (default is null)'),
+    type: Joi.number().example(1).description('Select parent category id (default is null)').optional().allow(null).default(null),
+    isVariant: Joi.number().example(1).description('Select parent category id (default is null)').optional().allow(null).default(null),
+    options: Joi.array().items(attributeOptions).min(0).label('categories-listing').description('Array of category objects')
+}).label('category-attribute-request').description('Payload object for creating a new category attribute')
+
+
+const categoryAttributeIdentity: Joi.ObjectSchema = Joi.object().keys({
+    categoryId: Joi.number().required().example(1).description("Unique identifier for the category"),
+    categoryAttributeId: Joi.number().required().example(1).description("Unique identifier for the category attribute"),
+}).label('category-attribute-identity').description('Identifier for category attribute');
+
+const listCategoryAttributeRequest: Joi.ObjectSchema = Joi.object().keys({
+    page: Joi.number().optional().min(1).default(1),
+    perPage: Joi.number().integer().optional().min(1).default(+process.env.PAGINATION_LIMIT!),
+}).label('category-attributes-list-request').description('Category attributes list request ')
+
+
+const categoryAttributeStatusRequest: Joi.ObjectSchema = Joi.object().keys({
+    status: Joi.boolean().required().error(errors => { return Common.routeError(errors, 'CATEGORY_ATTRIBUTE_STATUS_IS_REQUIRED') }).valid(true, false).description("Status of the category attribute")
+}).label('category-attribute-status-request').description("Request to update the status of the category attribute")
+
+export {
     categoryIdentity,
     categoryTypeIdentity,
     categoryDeleteResponse,
@@ -108,5 +141,10 @@ export{
     listCategoryRequest,
     listCategoryResponse,
     myDirectoriesRequest,
-    myDirectoriesResponse
+    myDirectoriesResponse,
+
+    categoryAttributeRequest,
+    categoryAttributeIdentity,
+    listCategoryAttributeRequest,
+    categoryAttributeStatusRequest
 }

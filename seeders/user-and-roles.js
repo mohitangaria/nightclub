@@ -1,5 +1,5 @@
 'use strict';
-const {Models} = require("../dist/models");
+const { Models } = require("../dist/models");
 const Common = require("../dist/controllers/common");
 const Constants = require("../dist/constants");
 const Bcrypt = require("bcrypt");
@@ -12,10 +12,10 @@ dotenv.config({ encoding: "utf8" });
 
 module.exports = {
   async up(queryInterface, Sequelize) {
-    let SELECT={ type: queryInterface.sequelize.QueryTypes.SELECT }
-    let initializations = await queryInterface.sequelize.query("select id from roles",SELECT);
+    let SELECT = { type: queryInterface.sequelize.QueryTypes.SELECT }
+    let initializations = await queryInterface.sequelize.query("select id from roles", SELECT);
     if (initializations.length == 0) {
-      let languages = await queryInterface.sequelize.query("select id from languages where code='en'",SELECT);
+      let languages = await queryInterface.sequelize.query("select id from languages where code='en'", SELECT);
       let admnRole = await queryInterface.bulkInsert("roles",
         [
           {
@@ -78,19 +78,51 @@ module.exports = {
         }
       }
       
+      let sellerrole = await queryInterface.bulkInsert(
+        "roles",
+        [
+          {
+            code: "seller",
+            status: 1,
+            is_default: true,
+            created_at: new Date(),
+            updated_at: new Date(),
+          },
+        ],
+        { returning: ["id"] }
+      );
+      if (userrole) {
+        let admnRoleContent = await queryInterface.bulkInsert(
+          "roles_content",
+          [
+            {
+              name: "Seller",
+              language_id: languages[0].id,
+              role_id: sellerrole,
+              created_at: new Date(),
+              updated_at: new Date(),
+            },
+          ],
+          { returning: ["id"] }
+        );
+        if (admnRoleContent) {
+          console.log("Seller role initialized");
+        }
+      }
+
     }
     const transaction = await queryInterface.sequelize.transaction();
     try {
       let userVerification = await Models.User.findOne({ where: { id: { [Op.gt]: 0 } } });
       if (!userVerification) {
-        const rounds = parseInt(process.env.HASH_ROUNDS);
-        const superAdminPassword = Bcrypt.hashSync(process.env.SUPERADMIN_PASSWORD, rounds);
+        // const rounds = parseInt(process.env.HASH_ROUNDS);
+        // const superAdminPassword = Bcrypt.hashSync(process.env.SUPERADMIN_PASSWORD, rounds);
         let superadmin = await Models.User.create(
           {
-            email: process.env.SUPERADMIN_EMAIL, password: superAdminPassword,
-            status: Constants.STATUS.ACTIVE, username: "superadmin",
-            userProfile: { name: "Administrator", imageId: null },
-            userAccounts: [ { accountId: null, isDefault: true } ],
+            email: process.env.SUPERADMIN_EMAIL, password: process.env.SUPERADMIN_PASSWORD,
+            status: Constants.STATUS.ACTIVE, username: "admin",
+            userProfile: { name: "Administrator", attachmentId: null },
+            userAccounts: [{ accountId: +process.env.SAAS_ENABLED ? 1 : null, isDefault: true }],
           },
           {
             include: [
@@ -101,7 +133,7 @@ module.exports = {
           }
         );
 
-        if(superadmin) {
+        if (superadmin) {
           let adminRole = await Models.Role.findOne({
             where: { code: "admin" },
           });
@@ -114,7 +146,7 @@ module.exports = {
           await transaction.rollback();
           console.log("Unable to create super admin account");
         }
-          await transaction.commit();
+        await transaction.commit();
       } else {
         console.log("System already initialized");
       }
