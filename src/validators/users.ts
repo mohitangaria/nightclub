@@ -201,11 +201,6 @@ const fetchUserListRequest: Joi.ObjectSchema = Joi.object().keys({
     .description("Optional number of users per page, default is 20")
     .error(errors => { return Common.routeError(errors, 'PER_PAGE_MUST_BE_INTEGER') }),
 
-  userType: Joi.string().trim().optional().valid("buyer", "seller", "requested-seller","staff").default(null)
-    .example("buyer")
-    .description("Optional parameter to filter users as per roles")
-    .error(errors => { return Common.routeError(errors, 'USERTYPE_MUST_BE_STRING') }),
-
   sortParameter: Joi.string().trim().optional().valid("id", "createdAt", "updatedAt").default("id")
     .example('id')
     .description("Optional parameter to sort users by, default is 'id'")

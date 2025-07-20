@@ -1125,25 +1125,7 @@ export const userslist = async (request: Hapi.RequestQuery, h: Hapi.ResponseTool
 
         let offset = (page - 1) * perPage;
 
-        let rolesWhere = {};
-        let sellerWhere = {};
-        let sellerRequired = false;
-        if(userType === "buyer") {
-            rolesWhere = { code: "user" };
-        } else if(userType === "seller") {
-            rolesWhere = { code: "seller" };
-            sellerWhere = { isVerifiedProfile: true }
-            sellerRequired = true;
-        } else if(userType === "requested-seller") {
-            rolesWhere = { code: "seller" };
-            sellerWhere = { isVerifiedProfile: false }
-            sellerRequired = true;
-        } else if(userType === "staff") {
-
-        } else {
-
-        }
-        
+        let rolesWhere = { code: "user" };
 
         let where = {};
         if(status !== null) where = { status: status }
@@ -1211,22 +1193,6 @@ export const userslist = async (request: Hapi.RequestQuery, h: Hapi.ResponseTool
                         {
                             model:Models.Attachment,as:'profileAttachment',
                             attributes:["id",[sequelize.fn('CONCAT',process.env.API_PATH,sequelize.literal('`userProfile->profileAttachment`.`unique_name`')), 'filePath'],
-                            "fileName", "uniqueName", "extension","status"]
-                        }
-                    ]
-                },
-                {
-                    attributes:[
-                        "name","contactEmail","contactCountryCode","contactPhone","storeUrl","socialMediaLink","hasSellerAccount",
-                        "attachmentId","isStripeConnected","isVerifiedDocuments","isVerifiedProfile","status", "userId", "currentStatus"
-                    ],
-                    model:Models.SellerProfile, as: "sellerProfile",
-                    where: sellerWhere,
-                    required: sellerRequired,
-                    include:[
-                        {
-                            model:Models.Attachment,as:'sellerAttachment',
-                            attributes:["id",[sequelize.fn('CONCAT',process.env.API_PATH,sequelize.literal('`sellerProfile->sellerAttachment`.`unique_name`')), 'filePath'],
                             "fileName", "uniqueName", "extension","status"]
                         }
                     ]
