@@ -38,7 +38,15 @@ interface UserPayload {
 }
 
 const userAttributes = ['id', 'email', 'countryCode', 'mobile', 'createdAt', 'updatedAt', 'status'];
-let UserProfileAttributes: AttributeElement[] = ['name', [sequelize.fn('CONCAT', process.env.BASE_URL, "/attachment/", sequelize.literal('`userProfile->profileAttachment`.`unique_name`')), 'profileImage']];
+let UserProfileAttributes: AttributeElement[] = ['name', 
+// [sequelize.fn('CONCAT', process.env.BASE_URL, "/attachment/", sequelize.literal('`userProfile->profileAttachment`.`unique_name`')), 'profileImage']
+[
+    sequelize.literal(
+      `CONCAT('${process.env.BASE_URL}/attachment/', \`userProfile->profileAttachment\`.unique_name)`
+    ),
+    'profileImage'
+  ]
+];
 
 // const createSearchIndex = async(id: number) => {
 //     let searchString = "";
@@ -116,14 +124,6 @@ const loginToken = async (userId: number, accountId: number | null, language: st
                     attributes: UserProfileAttributes,
                     include: [
                         { model: Models.Attachment, as: 'profileAttachment', attributes: [] }
-                    ]
-                },
-                {
-                    required: false,
-                    model: Models.SellerProfile, as: 'sellerProfile',
-                    attributes: {exclude: ["createdAt", "updatedAt", "deletedAt", "userId"]},
-                    include: [
-                        { model: Models.Attachment, as: 'sellerAttachment', attributes: [] }
                     ]
                 },
                 {
@@ -227,7 +227,6 @@ const loginToken = async (userId: number, accountId: number | null, language: st
                 updatedAt: user.updatedAt,
                 status: status,
                 userProfile: JSON.parse(JSON.stringify(user.userProfile)),
-                sellerProfile: JSON.parse(JSON.stringify(user.sellerProfile)),
                 Roles: JSON.parse(JSON.stringify(user.Roles)),
                 permissions
             }
@@ -1321,6 +1320,7 @@ export const updateUserProfile = async(request: Hapi.RequestQuery, h: Hapi.Respo
     const transaction = await sequelize.transaction();
     try {
         const userId = request.auth.credentials.userData.id;
+        console.log("userId=========>",userId)
         const {name, attachmentId} = request.payload;
 
         const updateObject: any = {};
