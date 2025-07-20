@@ -60,10 +60,37 @@ module.exports = [
             }
         }
     },
+    // {
+    //     method: 'POST',
+    //     path: '/user/verify-email',
+    //     handler: User.verifyEmail,
+    //     options: {
+    //         tags: ["api", "User"],
+    //         notes: "This endpoint allows users to verify if a token is valid or invalid, and if it is active or expired. If the token is verified, it creates a user based on the information stored within it.",
+    //         description: "Verify email",
+    //         auth: false,
+    //         validate: {
+    //             headers: headers,
+    //             options: options,
+    //             payload: verifyTokenRequest,
+    //             failAction: async (request: any, h: any, error: any) => {
+    //                 return Common.FailureError(error, request);
+    //             },
+    //             validator: Joi
+    //         },
+    //         response: {
+    //             status: {
+    //                 // 200: userResponse,
+    //                 400: resp400,
+    //                 500: resp500
+    //             }
+    //         }
+    //     }
+    // },
     {
         method: 'POST',
-        path: '/user/verify-email',
-        handler: User.verifyEmail,
+        path: '/user/verify-otp',
+        handler: User.verifyOTP,
         options: {
             tags: ["api", "User"],
             notes: "This endpoint allows users to verify if a token is valid or invalid, and if it is active or expired. If the token is verified, it creates a user based on the information stored within it.",

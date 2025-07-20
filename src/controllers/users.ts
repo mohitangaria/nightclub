@@ -362,10 +362,16 @@ const verifyUserCredentials = async (payload: UserPayload, transaction: Sequeliz
             Models.User.findOne({ where: { email: payload.email } }),
             // Models.User.findOne({ where: { username: payload.username } })
         ]);
+        const [isMobileExist] = await Promise.all([
+            Models.User.findOne({ where: { countryCode: payload?.countryCode, mobile: payload.mobile } }),
+        ]);
 
         // Check if email already exists
         if (emailExists) {
             return { success: false, message: "EMAIL_ALREADY_EXISTS", data: null };
+        }
+        if (isMobileExist) {
+            return { success: false, message: "MOBILE_ALREADY_EXISTS", data: null };
         }
 
         // Check if mobile username already exists
@@ -389,7 +395,7 @@ const verifyUserCredentials = async (payload: UserPayload, transaction: Sequeliz
 const createUser = async (payload: UserPayload, transaction: Sequelize.Transaction) => {
     try {
         // Verify user credentials for signup requests
-        const verifyCred = await verifyUserCredentials({ email: payload.email, username: payload.username }, transaction);
+        const verifyCred = await verifyUserCredentials({ countryCode: payload.countryCode, mobile: payload.mobile, email: payload.email, username: payload.username }, transaction);
         if (verifyCred.success !== true) {
             return { success: false, message: verifyCred.message, data: null };
         }
@@ -431,14 +437,14 @@ const createUser = async (payload: UserPayload, transaction: Sequelize.Transacti
         }
         await user.setRoles([roleInfo!.id], { transaction });
 
-        if(payload.role === "seller") {
-            const sellerRoleInfo = await Models.Role.findOne({ where: { code: payload.role } });
-            if(!sellerRoleInfo) {
-                return { success: false, message: "ROLE_NOT_FOUND", data: null };
-            }
-            await user.setRoles([sellerRoleInfo!.id, roleInfo!.id], { transaction });
-            await Models.SellerProfile.create({ userId: user.id, hasSellerAccount: true, name: payload.name, status: Constants.STATUS.ACTIVE, currentStatus: Constants.SELLER_STATUS.NO_SELLER }, { transaction });
-        }
+        // if(payload.role === "seller") {
+        //     const sellerRoleInfo = await Models.Role.findOne({ where: { code: payload.role } });
+        //     if(!sellerRoleInfo) {
+        //         return { success: false, message: "ROLE_NOT_FOUND", data: null };
+        //     }
+        //     await user.setRoles([sellerRoleInfo!.id, roleInfo!.id], { transaction });
+        //     await Models.SellerProfile.create({ userId: user.id, hasSellerAccount: true, name: payload.name, status: Constants.STATUS.ACTIVE, currentStatus: Constants.SELLER_STATUS.NO_SELLER }, { transaction });
+        // }
 
         // Return success result with the created user data
         return { success: true, message: "REQUEST_SUCCESSFULL", data: user };
@@ -449,6 +455,47 @@ const createUser = async (payload: UserPayload, transaction: Sequelize.Transacti
     }
 }
 
+/**
+ * Handle OTP verification.
+ * @param {Hapi.RequestQuery} request - The Hapi request object containing query parameters.
+ * @param {Hapi.ResponseToolkit} h - The Hapi response toolkit for generating HTTP responses.
+ * @returns {Promise<Hapi.ResponseObject>} - A promise that resolves with an HTTP response containing success status and user data.
+ */
+
+const sendOtp = async (phoneNumber: string, otp: number | string, countryCode: string) => {
+    try {
+        // Validate environment variables
+        if (!process.env.MASTER_CODE && !process.env.USE_TWILIO) {
+            return null;
+        }
+        if (parseInt(process.env.USE_TWILIO!) && (!process.env.TWILIO_ACCOUNT_SID || !process.env.TWILIO_AUTH_TOKEN || !process.env.TWILIO_PHONE_NUMBER)) {
+            return null;
+        }
+
+        // Override OTP with master code if enabled
+        otp = parseInt(process.env.USE_TWILIO!) ? otp : parseInt(process.env.MASTER_CODE!);
+
+        if (parseInt(process.env.USE_TWILIO!) || parseInt(process.env.MASTER_CODE!)) {
+            const twilio = require('twilio');
+            const client = new twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+
+            try {
+                const message = await client.messages.create({
+                    body: `Night club: Your Verification Code is ${otp}`,
+                    from: process.env.TWILIO_PHONE_NUMBER,
+                    to: `+${countryCode}${phoneNumber}`
+                });
+                return message;
+            } catch (twilioError: any) {
+                console.error('Error sending OTP via Twilio:', twilioError?.message!);
+                return null;
+            }
+        }
+    } catch (error: any) {
+        console.error('Error in sendOtp function:', error.message, error.stack);
+        return null;
+    }
+};
 
 /**
  * Handle OTP (One-Time Password) sending process based on request parameters.
@@ -459,18 +506,18 @@ const createUser = async (payload: UserPayload, transaction: Sequelize.Transacti
 export const signup = async (request: Hapi.RequestQuery, h: Hapi.ResponseToolkit) => {
     const transaction = await sequelize.transaction();
     try {
-        const { name, username, email, password, role } = request.payload;
+        const { name, username, email, countryCode, mobile, password } = request.payload;
         const responseData = { token: null };
 
         // Verify user credentials for signup requests
-        const verifyCred = await verifyUserCredentials({ email, username }, transaction);
+        const verifyCred = await verifyUserCredentials({ countryCode, mobile, email, username }, transaction);
         if (verifyCred.success !== true) {
             await transaction.rollback();
             return Common.generateError(request, 400, verifyCred.message, {});
         }
 
         // Generate a signup token for email verification 
-        const tokenData = await generateToken({ email, password, name, username, role }, Constants.TOKEN_TYPES.SIGNUP, transaction);
+        const tokenData = await generateToken({ countryCode, mobile, email, password, name, username }, Constants.TOKEN_TYPES.SIGNUP, transaction);
         if (tokenData.success !== true) {
             await transaction.rollback();
             return Common.generateError(request, 400, tokenData.message, {});
@@ -482,6 +529,14 @@ export const signup = async (request: Hapi.RequestQuery, h: Hapi.ResponseToolkit
         if (responseData.token === null) {
             await transaction.rollback();
             return Common.generateError(request, 400, 'ERROR_WHILE_GENERATING_TOKEN', {});
+        }
+
+        if (parseInt(process.env.USE_TWILIO!)) {
+            let otpSend = await sendOtp(mobile, tokenData?.data?.code!, countryCode);
+            if (!otpSend) {
+                await transaction.rollback();
+                return Common.generateError(request, 400, 'Error while sending OTP', {});
+            }
         }
 
         await transaction.commit();
@@ -530,7 +585,92 @@ export const verifyToken = async (request: Hapi.RequestQuery, h: Hapi.ResponseTo
  * @param {Hapi.ResponseToolkit} h - The Hapi response toolkit for generating HTTP responses.
  * @returns {Promise<Hapi.ResponseObject>} - A promise that resolves with an HTTP response containing success status and message.
  */
-export const verifyEmail = async (request: Hapi.RequestQuery, h: Hapi.ResponseToolkit) => {
+// export const verifyEmail = async (request: Hapi.RequestQuery, h: Hapi.ResponseToolkit) => {
+//     const transaction = await sequelize.transaction();
+//     try {
+//         const { token, code } = request.payload;
+
+//         let sendSingUpEmail = null;
+//         let replacements: any = {};
+
+//         // Find the token information in the database
+//         const tokenInfo = await Models.Token.findOne({ where: { token: token, code: code, status: Constants.STATUS.ACTIVE } });
+//         if (!tokenInfo) {
+//             await transaction.rollback();
+//             return Common.generateError(request, 400, 'INVALID_TOKEN_PROVIDED', {});
+//         }
+
+
+//         // Validate and decode the token to get token data
+//         const tokenData = await Common.validateToken(Common.decodeToken(token), tokenInfo.type);
+//         if (!tokenData || !tokenData.credentials) {
+//             await transaction.rollback();
+//             return Common.generateError(request, 400, 'INVALID_TOKEN_PROVIDED', {});
+//         }
+
+//         let userId = null;
+//         if(tokenInfo.type === Constants.TOKEN_TYPES.SIGNUP) {
+//             const createdUser = await createUser(tokenData.credentials?.userData, transaction);
+//             console.log("createdUser=========>",createdUser)
+//             if (createdUser.success !== true) {
+//                 await transaction.rollback();
+//                 return Common.generateError(request, 400, createdUser.message, {});
+//             }
+//             userId = createdUser.data!.id!;
+//             sendSingUpEmail = createdUser.data!.email;
+//             replacements = { name: createdUser.data!.userProfile!.name }
+//         }
+
+//         if(tokenInfo.type === Constants.TOKEN_TYPES.CHANGE_EMAIL) {
+//             const email = tokenData.credentials?.userData.email;
+//             userId = tokenData.credentials?.userData.userId;
+
+//             console.log(userId)
+
+//             const emailExists = await Models.User.findOne({ where: { email: email } });
+//             if(emailExists) {
+//                 await transaction.rollback();
+//                 return Common.generateError(request, 400, "EMAIL_ALREADY_EXISTS", {});
+//             }
+
+//             const updateAccount = await Models.User.update({ email }, {where: { id: userId }, transaction});
+//         }
+
+//         if(tokenInfo.type === Constants.TOKEN_TYPES.CHANGE_MOBILE) {
+//             const mobile = tokenData.credentials?.userData.mobile;
+//             const countryCode = tokenData.credentials?.userData.countryCode;
+//             userId = tokenData.credentials?.userData.userId;
+
+//             const userExists = await Models.User.findOne({ where: { id: userId } });
+//             if(!userExists) {
+//                 await transaction.rollback();
+//                 return Common.generateError(request, 400, "INVALID_USER", {});
+//             }
+
+//             await userExists.update({ mobile, countryCode }, {transaction});
+//         }
+
+//         // Update the token status to inactive
+//         await tokenInfo.update({ status: 0 }, { transaction });
+//         // Generate login token for the created user
+//         const accountId = userId;
+//         const responseData = await loginToken(userId, accountId, request.headers.language, transaction);
+
+//         await transaction.commit();
+
+//         // if(sendSingUpEmail !== null) {
+//         //     await sendEmail("welcome_onboard", replacements, [sendSingUpEmail], request.headers.language);
+//         // }
+
+//         await createSearchIndex(userId);
+//         return h.response({ message: request.i18n.__("REQUEST_SUCCESSFULL"), responseData: responseData }).code(200);
+//     } catch (error) {
+//         await transaction.rollback();
+//         return Common.generateError(request, 500, 'SOMETHING_WENT_WRONG_WITH_EXCEPTION', error);
+//     }
+// }
+
+export const verifyOTP = async (request: Hapi.RequestQuery, h: Hapi.ResponseToolkit) => {
     const transaction = await sequelize.transaction();
     try {
         const { token, code } = request.payload;
@@ -556,6 +696,7 @@ export const verifyEmail = async (request: Hapi.RequestQuery, h: Hapi.ResponseTo
         let userId = null;
         if(tokenInfo.type === Constants.TOKEN_TYPES.SIGNUP) {
             const createdUser = await createUser(tokenData.credentials?.userData, transaction);
+            console.log("createdUser=========>",createdUser)
             if (createdUser.success !== true) {
                 await transaction.rollback();
                 return Common.generateError(request, 400, createdUser.message, {});
@@ -602,9 +743,9 @@ export const verifyEmail = async (request: Hapi.RequestQuery, h: Hapi.ResponseTo
 
         await transaction.commit();
 
-        if(sendSingUpEmail !== null) {
-            await sendEmail("welcome_onboard", replacements, [sendSingUpEmail], request.headers.language);
-        }
+        // if(sendSingUpEmail !== null) {
+        //     await sendEmail("welcome_onboard", replacements, [sendSingUpEmail], request.headers.language);
+        // }
 
         await createSearchIndex(userId);
         return h.response({ message: request.i18n.__("REQUEST_SUCCESSFULL"), responseData: responseData }).code(200);
@@ -613,7 +754,6 @@ export const verifyEmail = async (request: Hapi.RequestQuery, h: Hapi.ResponseTo
         return Common.generateError(request, 500, 'SOMETHING_WENT_WRONG_WITH_EXCEPTION', error);
     }
 }
-
 /**
  * Handle user login process.
  * @param {Hapi.RequestQuery} request - The Hapi request object containing query parameters.

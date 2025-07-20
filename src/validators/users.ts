@@ -18,11 +18,22 @@ const signupRequest: Joi.ObjectSchema = Joi.object().keys({
     .description("User's full name")
     .error(errors => { return Common.routeError(errors, 'NAME_IS_REQUIRED') }),
 
-  role: Joi.string().trim().required()
-    .valid('user', 'seller')
-    .example('user')
-    .description("Code representing the user's role within the system")
-    .error(errors => { return Common.routeError(errors, 'ROLE_IS_REQUIRED') })
+  mobile: Joi.string().trim().required()
+    .pattern(/^\d+$/)
+    .example("1234567890")
+    .description("The new mobile number associated with the account, which must contain only digits.")
+    .error(errors => { return Common.routeError(errors, 'MOBILE_IS_REQUIRED_AND_MUST_BE_NUMERIC') }),
+
+  countryCode: Joi.string().trim().required()
+    .example("+1")
+    .description("The country code associated with the new mobile number.")
+    .error(errors => { return Common.routeError(errors, 'COUNTRY_CODE_IS_REQUIRED') }),
+
+  // role: Joi.string().trim().required()
+  //   .valid('user', 'seller')
+  //   .example('user')
+  //   .description("Code representing the user's role within the system")
+  //   .error(errors => { return Common.routeError(errors, 'ROLE_IS_REQUIRED') })
 }).label('signup-request')
   .description("Schema for validating user signup requests, including email, password, name, and role.");
 
