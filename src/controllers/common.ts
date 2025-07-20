@@ -676,6 +676,22 @@ const searchTextConversion = (sentence: string) => {
   return { specialString, regularString };
 }
 
+const checkRole = async (userId: number, roleCode: string): Promise<boolean> => {
+  const user = await Models.User.findOne({
+      include: [
+          {
+              model: Models.Role,
+              through: { attributes: [] }
+          }
+      ],
+      where: { id: userId }
+  });
+
+  if (!user || !user.Roles) return false;
+
+  return user.Roles.some((role: any) => role.code === roleCode);
+}
+
 export {
   // validateApiKey,
   validateToken,
@@ -704,5 +720,6 @@ export {
   sendVerificationEamil,
   verifyEmailIdentitySatus,
   axiosRequest,
-  searchTextConversion
+  searchTextConversion,
+  checkRole
 }
