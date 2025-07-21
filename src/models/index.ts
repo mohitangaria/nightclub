@@ -97,6 +97,7 @@ import AttributeContent from './AttributeContent';
 import ShopRequest from './ShopRequest';
 
 import LostAndFound from './LostAndFound';
+import Inquiry from './Inquiry';
 
 
 User.hasMany(UserAccount, { foreignKey: "userId", as: "userAccounts", onDelete: "cascade", onUpdate: "cascade", hooks: true });
@@ -353,7 +354,8 @@ let Models = {
     ProductKeywordContent,
     Attribute,
     AttributeContent,
-    LostAndFound
+    LostAndFound,
+    Inquiry
 }
 
 export { Models, Sequelize, sequelize };
