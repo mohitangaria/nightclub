@@ -131,26 +131,26 @@ export const updateRequest = async (request: Hapi.RequestQuery, h: Hapi.Response
       let slot = existingRecord.slot;
       let finalEventId = eventId || existingRecord.eventId;
   
-      // if (bookingId) {
-      //   const booking = await Models.Booking.findOne({ where: { id: bookingId } });
-      //   if (booking) {
-      //     finalEventId = booking.eventId;
-      //     slot = booking.slots;
-      //   }
-      // } else if (eventId) {
-      //   const event = await Models.Event.findOne({ where: { id: eventId } });
-      //   if (event && event.slots?.length > 0) {
-      //     slot = event.slots[0];
-      //   }
-      // }
+    //   if (bookingId) {
+    //     const booking = await Models.Booking.findOne({ where: { id: bookingId } });
+    //     if (booking) {
+    //       finalEventId = booking.eventId;
+    //       slot = booking.slots;
+    //     }
+    //   } else if (eventId) {
+    //     const event = await Models.Event.findOne({ where: { id: eventId } });
+    //     if (event && event.slots?.length > 0) {
+    //       slot = event.slots[0];
+    //     }
+    //   }
   
       const updatedData:LostAndFoundInterface = {
         type,
         itemName,
         itemDescription,
         lostOrFoundDate,
-        eventId: finalEventId,
-        bookingId,
+        // eventId: finalEventId,
+        // bookingId,
         contactNumber,
         contactCountryCode,
         attachmentId,
@@ -184,9 +184,9 @@ export const updateRequest = async (request: Hapi.RequestQuery, h: Hapi.Response
     }
   };
   
-export const list = async (request: Hapi.RequestQuery, h: Hapi.ResponseToolkit) => {
+export const getAll = async (request: Hapi.RequestQuery, h: Hapi.ResponseToolkit) => {
     try {
-      let {perPage,page,postType} = request.query;
+      let {perPage,page} = request.query;
       perPage = +process.env.PAGINATION_LIMIT!<perPage?+process.env.PAGINATION_LIMIT!:perPage
       let offset = (page - 1) * perPage;
       const results = await Models.LostAndFound.findAndCountAll({
@@ -196,13 +196,26 @@ export const list = async (request: Hapi.RequestQuery, h: Hapi.ResponseToolkit) 
             distinct:true,
             // subQuery:false
       });
-      return h.response({ responseData: results }).code(200);
+      const count = results.count;
+        let totalPages = await Common.getTotalPages(count,perPage);
+        let rows = JSON.parse(JSON.stringify(results.rows));
+        return h.response({
+            message:request.i18n.__("POST_LIST_REQUEST_PROCESSED_SUCCESSFULLY"),
+            responseData:{
+                data:rows,
+                perPage:perPage,
+                page:page,
+                totalPages:totalPages,
+                totalRecords: count
+            }
+        }).code(200)
+    
     } catch (err) {
       return Common.generateError(request, 500, 'FAILED_TO_FETCH_RECORDS', err);
     }
   };  
 
-export const listForUser = async (request: Hapi.RequestQuery, h: Hapi.ResponseToolkit) => {
+export const getAllByUser = async (request: Hapi.RequestQuery, h: Hapi.ResponseToolkit) => {
     try {
     const userId = request.auth.credentials.userData.id;  
       let {perPage,page,postType} = request.query;
@@ -216,12 +229,24 @@ export const listForUser = async (request: Hapi.RequestQuery, h: Hapi.ResponseTo
             distinct:true,
             // subQuery:false
       });
-      return h.response({ responseData: results }).code(200);
+      const count = results.count;
+        let totalPages = await Common.getTotalPages(count,perPage);
+        let rows = JSON.parse(JSON.stringify(results.rows));
+        return h.response({
+            message:request.i18n.__("POST_LIST_REQUEST_PROCESSED_SUCCESSFULLY"),
+            responseData:{
+                data:rows,
+                perPage:perPage,
+                page:page,
+                totalPages:totalPages,
+                totalRecords: count
+            }
+        }).code(200)
     } catch (err) {
       return Common.generateError(request, 500, 'FAILED_TO_FETCH_RECORDS', err);
     }
   };   
-export const getAll = async (request: Hapi.RequestQuery, h: Hapi.ResponseToolkit) => {
+export const list = async (request: Hapi.RequestQuery, h: Hapi.ResponseToolkit) => {
     try {
       const results = await Models.LostAndFound.findAll();
       return h.response({ responseData: results }).code(200);
@@ -230,7 +255,7 @@ export const getAll = async (request: Hapi.RequestQuery, h: Hapi.ResponseToolkit
     }
   };
   
-export const getAllByUser = async (request: Hapi.RequestQuery, h: Hapi.ResponseToolkit) => {
+export const listForUser = async (request: Hapi.RequestQuery, h: Hapi.ResponseToolkit) => {
     try {
       const userId = request.auth.credentials.userData.id;
       const results = await Models.LostAndFound.findAll({ where: { reportedBy: userId } });

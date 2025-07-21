@@ -312,6 +312,14 @@ const updateUserProfileRequest: Joi.ObjectSchema = Joi.object().keys({
   .description("Schema for updating a user profile, allowing optional fields: name and attachment ID.");
   
 
+  const updateUserSettings: Joi.ObjectSchema = Joi.object().keys({
+    generalNotifications:Joi.boolean().required().example(true).description("General Notification"),
+    paymentNotifications:Joi.boolean().required().example(true).description("Payment Notification"),
+    reminderNotifications:Joi.boolean().required().example(true).description("Reminder Notification"),
+
+  }).label('update-user-settings')
+    .description("Update user settings");
+
   const createShopDocRequest: Joi.ObjectSchema = Joi.object().keys({
     businessName: Joi.string().trim().required()
       .example('Example Business')
@@ -435,5 +443,6 @@ export {
   resendCodeRequest,
   approveAccountRequest,
   createShopDocRequest,
-  refreshTokenRequest
+  refreshTokenRequest,
+  updateUserSettings
 }

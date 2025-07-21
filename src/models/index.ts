@@ -97,6 +97,7 @@ import AttributeContent from './AttributeContent';
 import ShopRequest from './ShopRequest';
 
 import LostAndFound from './LostAndFound';
+import Inquiry from './Inquiry';
 import SupportTicket from './SupportTicket'
 import SupportMessage from './SupportMessage';
 
@@ -360,6 +361,7 @@ let Models = {
     Attribute,
     AttributeContent,
     LostAndFound,
+    Inquiry,
     SupportTicket,
     SupportMessage,
 

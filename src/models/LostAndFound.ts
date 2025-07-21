@@ -32,7 +32,7 @@ const LostAndFound = sequelize.define<LostAndFoundInstance>(
         proofOfOwner:{type:DataTypes.STRING, defaultValue:null, allowNull:true, comment:"proof of owner"},
         comment:{type:DataTypes.TEXT,allowNull:true, defaultValue:null,comment:"Remark or comment if needed by admin"},
         reportedBy:{type:DataTypes.INTEGER, allowNull:false, comment:"Reported By whom"},
-        itemDescription:{type:DataTypes.STRING, allowNull:true, defaultValue:null, comment:"Descriptionn of the item"},
+        itemDescription:{type:DataTypes.TEXT, allowNull:true, defaultValue:null, comment:"Descriptionn of the item"},
         status: { type: DataTypes.INTEGER, defaultValue: Constants.USER_STATUS.ACTIVE, comment: "Status of user. 0-> Inactive, 1-> Active, 2-> not verified" },
         contactCountryCode: { type: DataTypes.STRING, allowNull: true, defaultValue: null, comment: "" },
         contactNumber: { type: DataTypes.STRING, allowNull: true, defaultValue: null, comment: "" },

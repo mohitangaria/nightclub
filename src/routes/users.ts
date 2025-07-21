@@ -1,6 +1,6 @@
 import { Common, Joi } from "../config/routeImporter";
 import * as User from "../controllers/users";
-import { signupRequest, verifyTokenRequest, loginRequest, forgetPasswordRequest, resetPasswordRequest, changePasswordRequest, fetchUserListRequest, createSellerProfileRequest, updateSellerProfileRequest, socialLoginRequest, changeStatusRequest, updateUserProfileRequest, changeMobileRequest, resendCodeRequest, approveAccountRequest, createShopDocRequest, refreshTokenRequest } from "../validators/users";
+import { signupRequest, verifyTokenRequest, loginRequest, forgetPasswordRequest, resetPasswordRequest, changePasswordRequest, fetchUserListRequest, createSellerProfileRequest, updateSellerProfileRequest, socialLoginRequest, changeStatusRequest, updateUserProfileRequest, changeMobileRequest, resendCodeRequest, approveAccountRequest, createShopDocRequest, refreshTokenRequest, updateUserSettings } from "../validators/users";
 import { otpResponse, userResponse } from "../validators/users";
 import { authorizedheaders, optional_authorizedheaders, headers, options, validator, respmessage, resp400, resp500, identifierRequest } from "../validators/global";
 const isAuthorized = false
@@ -507,6 +507,33 @@ module.exports = [
                 headers: authorizedheaders,
                 options: options,
                 payload: updateUserProfileRequest,
+                failAction: async (request: any, h: any, error: any) => {
+                    return Common.FailureError(error, request);
+                },
+                validator: Joi
+            },
+            response: {
+                status: {
+                    // 200: otpResponse,
+                    400: resp400,
+                    500: resp500
+                }
+            }
+        }
+    },
+    {
+        method: 'PATCH',
+        path: '/user/update-settings',
+        handler: User.updateUserSettings,
+        options: {
+            tags: ["api", "User"],
+            notes: "User Settings update",
+            description: "Update User settings",
+            auth: {strategy: "jwt"},
+            validate: {
+                headers: authorizedheaders,
+                options: options,
+                payload: updateUserSettings,
                 failAction: async (request: any, h: any, error: any) => {
                     return Common.FailureError(error, request);
                 },
