@@ -99,6 +99,7 @@ module.exports = {
                     title: "Document received for signature",
                     subject: "Action Required: Review Your Document from Stylette",
                     message: `<h2><strong>Hi {{name}},</strong></h2><p>You have received a document from Stylette. To view and proceed with the next steps, please visit our website:</p><p><a href="{{link}}">{{link}}</a></p><p>We encourage you to complete the process at your earliest convenience.</p><p>If you have any questions or did not request this document, please contact our support team.</p><p><strong>Best regards,</strong></p><p><strong>Stylette Team</strong></p>`,
+                    messageText: `<h2><strong>Hi {{name}},</strong></h2><p>You have received a document from Stylette. To view and proceed with the next steps, please visit our website:</p><p><a href="{{link}}">{{link}}</a></p><p>We encourage you to complete the process at your earliest convenience.</p><p>If you have any questions or did not request this document, please contact our support team.</p><p><strong>Best regards,</strong></p><p><strong>Stylette Team</strong></p>`,
                     languageId: defaultLanguage
                 }]
             },
@@ -112,6 +113,7 @@ module.exports = {
                     title: "Account Pre Approval",
                     subject: "Congratulations! Your Application Has Been Pre-Approved",
                     message: `<h2><strong>Hi {{name}},</strong></h2><p>We're excited to inform you that your application has been pre-approved! To proceed with the next steps, please visit our website and provide some additional details:</p><p><a href="{{link}}">{{link}}</a></p><p>Completing this process will help us finalize your application and move forward swiftly.</p><p>If you have any questions or need assistance, feel free to reach out to our support team.</p><p><strong>Best regards,</strong></p><p><strong>Stylette Team</strong></p>`,
+                    messageText: `<h2><strong>Hi {{name}},</strong></h2><p>We're excited to inform you that your application has been pre-approved! To proceed with the next steps, please visit our website and provide some additional details:</p><p><a href="{{link}}">{{link}}</a></p><p>Completing this process will help us finalize your application and move forward swiftly.</p><p>If you have any questions or need assistance, feel free to reach out to our support team.</p><p><strong>Best regards,</strong></p><p><strong>Stylette Team</strong></p>`,
                     languageId: defaultLanguage
                 }]
             },
@@ -125,6 +127,7 @@ module.exports = {
                     title: "Account Approved",
                     subject: "Congratulations! Your Application Has Been Approved",
                     message: `<h2><strong>Hi {{name}},</strong></h2><p>Great news! Your account has been approved. You can now create your store and start selling on our platform.</p><p>To get started, please visit our website and follow the instructions to set up your store:</p><p><a href="{{link}}">{{link}}</a></p><p>We look forward to seeing your store flourish! If you have any questions or need help, our support team is here for you.</p><p><strong>Best regards,</strong></p><p><strong>Stylette Team</strong></p>`,
+                    messageText: `<h2><strong>Hi {{name}},</strong></h2><p>Great news! Your account has been approved. You can now create your store and start selling on our platform.</p><p>To get started, please visit our website and follow the instructions to set up your store:</p><p><a href="{{link}}">{{link}}</a></p><p>We look forward to seeing your store flourish! If you have any questions or need help, our support team is here for you.</p><p><strong>Best regards,</strong></p><p><strong>Stylette Team</strong></p>`,
                     languageId: defaultLanguage
                 }]
             },
@@ -138,6 +141,7 @@ module.exports = {
                     title: "Account Rejected",
                     subject: "Account Application Update - Reapply Today!",
                     message: `<h2><strong>Hi {{name}},</strong></h2><p>We regret to inform you that your account application has been rejected due to the following reason(s):</p><p><strong>{{reason}}</strong></p><p>However, we encourage you to review the feedback and start a new application. You can begin the process again by visiting our website:</p><p><a href="{{link}}">{{link}}</a></p><p>If you have any questions or need assistance, please reach out to our support team. We are here to help!</p><p><strong>Best regards,</strong></p><p><strong>Stylette Team</strong></p>`,
+                    messageText: `<h2><strong>Hi {{name}},</strong></h2><p>We regret to inform you that your account application has been rejected due to the following reason(s):</p><p><strong>{{reason}}</strong></p><p>However, we encourage you to review the feedback and start a new application. You can begin the process again by visiting our website:</p><p><a href="{{link}}">{{link}}</a></p><p>If you have any questions or need assistance, please reach out to our support team. We are here to help!</p><p><strong>Best regards,</strong></p><p><strong>Stylette Team</strong></p>`,
                     languageId: defaultLanguage
                 }]
             }

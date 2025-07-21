@@ -461,7 +461,7 @@ const createUser = async (payload: UserPayload, transaction: Sequelize.Transacti
  * @returns {Promise<Hapi.ResponseObject>} - A promise that resolves with an HTTP response containing success status and user data.
  */
 
-const sendOtp = async (phoneNumber: string, otp: number | string, countryCode: string) => {
+const sendOtp = async (countryCode: string, phoneNumber: string, otp: number | string) => {
     try {
         // Validate environment variables
         if (!process.env.MASTER_CODE && !process.env.USE_TWILIO) {
@@ -531,7 +531,7 @@ export const signup = async (request: Hapi.RequestQuery, h: Hapi.ResponseToolkit
         }
 
         if (parseInt(process.env.USE_TWILIO!)) {
-            let otpSend = await sendOtp(mobile, tokenData?.data?.code!, countryCode);
+            let otpSend = await sendOtp(countryCode, mobile, tokenData?.data?.code!);
             if (!otpSend) {
                 await transaction.rollback();
                 return Common.generateError(request, 400, 'Error while sending OTP', {});
@@ -669,7 +669,7 @@ export const verifyToken = async (request: Hapi.RequestQuery, h: Hapi.ResponseTo
 //     }
 // }
 
-export const verifyOTP = async (request: Hapi.RequestQuery, h: Hapi.ResponseToolkit) => {
+export const verifyCode = async (request: Hapi.RequestQuery, h: Hapi.ResponseToolkit) => {
     const transaction = await sequelize.transaction();
     try {
         const { token, code } = request.payload;
@@ -1704,7 +1704,13 @@ export const resendCode = async(request: Hapi.RequestQuery, h: Hapi.ResponseTool
 
 
         }
-        
+        if (parseInt(process.env.USE_TWILIO!)) {
+            let otpSend = await sendOtp(data.countryCode, data.mobile, tokenInfo.code!);
+            if (!otpSend) {
+                await transaction.rollback();
+                return Common.generateError(request, 400, 'Error while sending OTP', {});
+            }
+        }
         // if(tokenInfo.type === "signup_verification" || tokenInfo.type === "reset_password" || tokenInfo.type === "change_email") {
         //     const userInfo = await Models.User.findOne({
         //         where: { email: tokenInfo.email },
@@ -1800,3 +1806,6 @@ export const refreshToken=async(request: Hapi.RequestQuery, h: Hapi.ResponseTool
         return Common.generateError(request, 500, 'SOMETHING_WENT_WRONG_WITH_EXCEPTION', error);
     }
 }
+
+  
+  

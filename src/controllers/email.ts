@@ -460,7 +460,8 @@ export const sendEmail = async(code: string, replacements: any, emails: any, lan
         if(process.env.NODE_ENV === "TEST") {
             return {success: true, message: "REQUEST_SUCCESSFULL", data: null};
         }
-        const data = await Common.sendEmail(emails, process.env.SES_SMTP_EMAIL!, [], [], code, replacements, [], language, 'email', 'signup');
+        // const data = await Common.sendEmail(emails, process.env.SES_SMTP_EMAIL!, [], [], code, replacements, [], language, 'email', 'signup');
+        const data = await Common.sendEmail(emails, 'mohitangaria77@gmail.com', [], [], code, replacements, [], language, 'email', 'signup');
         return {success: true, message: "REQUEST_SUCCESSFULL", data: null};
     } catch (error) {
         return {success: false, message: "ERROR_WHILE_SENDING_EMAIL", data: null};

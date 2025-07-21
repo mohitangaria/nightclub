@@ -89,8 +89,8 @@ module.exports = [
     // },
     {
         method: 'POST',
-        path: '/user/verify-otp',
-        handler: User.verifyOTP,
+        path: '/user/verify-code',
+        handler: User.verifyCode,
         options: {
             tags: ["api", "User"],
             notes: "This endpoint allows users to verify if a token is valid or invalid, and if it is active or expired. If the token is verified, it creates a user based on the information stored within it.",

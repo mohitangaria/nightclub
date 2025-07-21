@@ -97,6 +97,8 @@ import AttributeContent from './AttributeContent';
 import ShopRequest from './ShopRequest';
 
 import LostAndFound from './LostAndFound';
+import SupportTicket from './SupportTicket'
+import SupportMessage from './SupportMessage';
 
 
 User.hasMany(UserAccount, { foreignKey: "userId", as: "userAccounts", onDelete: "cascade", onUpdate: "cascade", hooks: true });
@@ -305,6 +307,10 @@ Attribute.hasMany(AttributeOption, {foreignKey: "attributeId"})
 
 AttributeContent.belongsTo(Language, {foreignKey: "languageId"});
 
+SupportTicket.hasMany(SupportMessage, { foreignKey: 'supportTicketId', as: 'messages' });
+SupportMessage.belongsTo(SupportTicket, { foreignKey: 'supportTicketId', as: 'ticket' });
+
+
 let Models = {
     AppVersion,
     Attachment,
@@ -353,7 +359,10 @@ let Models = {
     ProductKeywordContent,
     Attribute,
     AttributeContent,
-    LostAndFound
+    LostAndFound,
+    SupportTicket,
+    SupportMessage,
+
 }
 
 export { Models, Sequelize, sequelize };

@@ -20,8 +20,8 @@ import { SocketConstructorOpts, TcpSocketConnectOpts } from "net";
 export let server: Server;
 export const init = async function (): Promise<Server> {
     server = Hapi.server({
-        port: process.env.PORT!,
-        host: process.env.HOST!,
+        port: Number(process.env.PORT) || 3000,
+        host: process.env.HOST || '0.0.0.0',
         routes: {
             cors: {
                 origin: ["*"],
@@ -80,7 +80,8 @@ export const init = async function (): Promise<Server> {
         },
         basePath: "/",
         host: process.env.API_SERVER_HOST,
-        schemes: ["https",process.env.PROTOCOL!],
+        // schemes: ["https",process.env.PROTOCOL!],
+        schemes: [process.env.PROTOCOL! || 'http'],
         grouping: "tags",
         sortEndpoints: "method",
         consumes: ["application/json"],
