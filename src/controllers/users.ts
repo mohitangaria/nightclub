@@ -38,7 +38,7 @@ interface UserPayload {
 }
 
 const userAttributes = ['id', 'email', 'countryCode', 'mobile', 'createdAt', 'updatedAt', 'status'];
-let UserProfileAttributes: AttributeElement[] = ['name', 
+let UserProfileAttributes: AttributeElement[] = ['name', 'generalNotifications', 'paymentNotifications', 'reminderNotifications',
 // [sequelize.fn('CONCAT', process.env.BASE_URL, "/attachment/", sequelize.literal('`userProfile->profileAttachment`.`unique_name`')), 'profileImage']
 [
     sequelize.literal(
@@ -1797,6 +1797,40 @@ export const refreshToken=async(request: Hapi.RequestQuery, h: Hapi.ResponseTool
         }
     }
     catch(error){
+        return Common.generateError(request, 500, 'SOMETHING_WENT_WRONG_WITH_EXCEPTION', error);
+    }
+}
+
+
+
+export const updateUserSettings = async(request: Hapi.RequestQuery, h: Hapi.ResponseToolkit) => {
+    const transaction = await sequelize.transaction();
+    try {
+        const userId = request.auth.credentials.userData.id;
+  
+        const {generalNotifications, paymentNotifications, reminderNotifications} = request.payload;
+
+      
+
+        const userInfo = await Models.User.findOne({ where: { id: userId } });
+        if(!userInfo) {
+            await transaction.rollback();
+            return Common.generateError(request, 400, 'INVALID_USER', {});
+        }
+
+        const profileInfo = await Models.UserProfile.findOne({ where: { userId: userId } });
+        if(!profileInfo) {
+            await transaction.rollback();
+            return Common.generateError(request, 400, 'INVALID_USER_PROFILE', {});
+        }
+        
+    
+        await profileInfo.update({generalNotifications, paymentNotifications, reminderNotifications}, { transaction });
+        await transaction.commit();
+        const userDetails = await loginToken(userId, null, request.headers.language, null, false)
+        return h.response({message:request.i18n.__("REQUEST_SUCCESSFULL"),responseData: userDetails}).code(200);
+    } catch (error) {
+        await transaction.rollback();
         return Common.generateError(request, 500, 'SOMETHING_WENT_WRONG_WITH_EXCEPTION', error);
     }
 }

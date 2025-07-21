@@ -131,26 +131,26 @@ export const updateRequest = async (request: Hapi.RequestQuery, h: Hapi.Response
       let slot = existingRecord.slot;
       let finalEventId = eventId || existingRecord.eventId;
   
-      if (bookingId) {
-        const booking = await Models.Booking.findOne({ where: { id: bookingId } });
-        if (booking) {
-          finalEventId = booking.eventId;
-          slot = booking.slots;
-        }
-      } else if (eventId) {
-        const event = await Models.Event.findOne({ where: { id: eventId } });
-        if (event && event.slots?.length > 0) {
-          slot = event.slots[0];
-        }
-      }
+    //   if (bookingId) {
+    //     const booking = await Models.Booking.findOne({ where: { id: bookingId } });
+    //     if (booking) {
+    //       finalEventId = booking.eventId;
+    //       slot = booking.slots;
+    //     }
+    //   } else if (eventId) {
+    //     const event = await Models.Event.findOne({ where: { id: eventId } });
+    //     if (event && event.slots?.length > 0) {
+    //       slot = event.slots[0];
+    //     }
+    //   }
   
       const updatedData:LostAndFoundInterface = {
         type,
         itemName,
         itemDescription,
         lostOrFoundDate,
-        eventId: finalEventId,
-        bookingId,
+        // eventId: finalEventId,
+        // bookingId,
         contactNumber,
         contactCountryCode,
         attachmentId,

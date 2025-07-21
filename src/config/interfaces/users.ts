@@ -32,6 +32,9 @@ interface UserProfileInterface {
     name?: string;
     referralCode?: string;
     attachmentId?: number | null;
+    generalNotifications?: boolean | null;
+    paymentNotifications?: boolean | null;
+    reminderNotifications?: boolean | null;
 }
 
 interface SellerProfileInterface {
