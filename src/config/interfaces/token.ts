@@ -6,6 +6,7 @@ interface TokenInterface {
     countryCode: string | null;
     mobile: string | null;
     userId: number | null;
+    dob: number | null;
     accountId: number | null;
     token: string;
     code?: string;

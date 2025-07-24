@@ -16,6 +16,7 @@ const UserProfile = sequelize.define<UserProfileInstance>(
         },
         userId: { type: DataTypes.INTEGER, allowNull: false, unique: 'user-profile', comment: "User ref id" },
         name: { type: DataTypes.STRING, allowNull: true, defaultValue: null, comment: "User  name" },
+        dob: {type: DataTypes.STRING, allowNull: true, comment: "DOB" },
         attachmentId: { type: DataTypes.INTEGER, allowNull: true, defaultValue: null, comment: "User Profile image" },
         referralCode: { type: DataTypes.STRING, allowNull: true, defaultValue: null, comment: "Refferal code of the user" },
         generalNotifications:{type: DataTypes.BOOLEAN, allowNull:false, defaultValue:true, comment:'notifications enable disable'},

@@ -1,5 +1,5 @@
 const adminPayload = {
-    email: 'admin@stylette.com',
+    email: 'admin@nightCode.com',
     password: 'admin@123'
 };
 

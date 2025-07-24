@@ -78,37 +78,37 @@ module.exports = {
         }
       }
       
-      let sellerrole = await queryInterface.bulkInsert(
-        "roles",
-        [
-          {
-            code: "seller",
-            status: 1,
-            is_default: true,
-            created_at: new Date(),
-            updated_at: new Date(),
-          },
-        ],
-        { returning: ["id"] }
-      );
-      if (userrole) {
-        let admnRoleContent = await queryInterface.bulkInsert(
-          "roles_content",
-          [
-            {
-              name: "Seller",
-              language_id: languages[0].id,
-              role_id: sellerrole,
-              created_at: new Date(),
-              updated_at: new Date(),
-            },
-          ],
-          { returning: ["id"] }
-        );
-        if (admnRoleContent) {
-          console.log("Seller role initialized");
-        }
-      }
+      // let sellerrole = await queryInterface.bulkInsert(
+      //   "roles",
+      //   [
+      //     {
+      //       code: "seller",
+      //       status: 1,
+      //       is_default: true,
+      //       created_at: new Date(),
+      //       updated_at: new Date(),
+      //     },
+      //   ],
+      //   { returning: ["id"] }
+      // );
+      // if (userrole) {
+      //   let admnRoleContent = await queryInterface.bulkInsert(
+      //     "roles_content",
+      //     [
+      //       {
+      //         name: "Seller",
+      //         language_id: languages[0].id,
+      //         role_id: sellerrole,
+      //         created_at: new Date(),
+      //         updated_at: new Date(),
+      //       },
+      //     ],
+      //     { returning: ["id"] }
+      //   );
+      //   if (admnRoleContent) {
+      //     console.log("Seller role initialized");
+      //   }
+      // }
 
     }
     const transaction = await queryInterface.sequelize.transaction();

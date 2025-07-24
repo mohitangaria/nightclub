@@ -1,11 +1,11 @@
 const randomEmail='email_1'+String(Date.now())+'@domain.com';
 const adminPayload = {
-    email: 'admin@stylette.com',
+    email: 'admin@nightClub.com',
     password: 'admin@123'
 }
 
 const createUser = {
-    email: "stylette_user@yopmail.com",
+    email: "night_club_user@yopmail.com",
     password: "password"
 }
 

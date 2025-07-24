@@ -23,11 +23,18 @@ const signupRequest: Joi.ObjectSchema = Joi.object().keys({
     .example("1234567890")
     .description("The new mobile number associated with the account, which must contain only digits.")
     .error(errors => { return Common.routeError(errors, 'MOBILE_IS_REQUIRED_AND_MUST_BE_NUMERIC') }),
-
+  
   countryCode: Joi.string().trim().required()
     .example("+1")
     .description("The country code associated with the new mobile number.")
     .error(errors => { return Common.routeError(errors, 'COUNTRY_CODE_IS_REQUIRED') }),
+  
+  dob: Joi.string().trim().required()
+    .example("1990-01-01")
+    .description("Date of birth in YYYY-MM-DD format.")
+    .error(errors => {
+      return Common.routeError(errors, 'DOB_IS_REQUIRED');
+    })
 
   // role: Joi.string().trim().required()
   //   .valid('user', 'seller')
@@ -308,6 +315,12 @@ const updateUserProfileRequest: Joi.ObjectSchema = Joi.object().keys({
     .example(1).default(null)
     .description("Optional ID for any attachment related to the user or entity. Can be null or an empty string if not applicable.")
     .error(errors => { return Common.routeError(errors, 'ATTACHMENT_ID_MUST_BE_NUMBER') }),
+  dob: Joi.string().trim().required()
+    .example("1990-01-01")
+    .description("Date of birth in YYYY-MM-DD format.")
+    .error(errors => {
+      return Common.routeError(errors, 'DOB_IS_REQUIRED');
+    })
 }).label('update-user-profile-request')
   .description("Schema for updating a user profile, allowing optional fields: name and attachment ID.");
   

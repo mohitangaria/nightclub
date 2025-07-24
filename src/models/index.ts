@@ -34,7 +34,6 @@ import AppVersion from './AppVersion';
 
 import User from "./User";
 import UserProfile from "./UserProfile";
-import SellerProfile from "./SellerProfile";
 import UserAccount from "./UserAccount";
 
 import Role from './Role';
@@ -52,14 +51,8 @@ import Notification from './Notification';
 import NotificationTemplate from './NotificationTemplate';
 import NotificationTemplateContent from './NotificationTemplateContent';
 
-import Document from './Document';
-import DocumentContent from './DocumentContent';
-import UserDocument from './UserDocument';
-
 import Address from './Address';
 
-import Shop from './Shop';
-import ShopContent from './ShopContent';
 
 import CategoryType from './CategoryType';
 import CategoryTypeContent from './CategoryTypeContent';
@@ -76,25 +69,9 @@ import PostMedia from './PostMedia';
 
 import AttributeOption from './AttributeOption';
 import AttributeOptionContent from './AttributeOptionContent';
-import BankDetail from './BankDetail';
-
-import Brand from './Brand';
-import BrandContent from './BrandContent';
-
-import Product from './Product';
-import ProductContent from './ProductContent';
-
-import ProductAttribute from './ProductAttribute';
-import ProductAttributeContent from './ProductAttributeContent';
-
-import ProductGallery from './ProductGallery';
-
-import ProductKeyword from './ProductKeyword';
-import ProductKeywordContent from './ProductKeywordContent';
 
 import Attribute from './Attribute';
 import AttributeContent from './AttributeContent';
-import ShopRequest from './ShopRequest';
 
 import LostAndFound from './LostAndFound';
 import Inquiry from './Inquiry';
@@ -105,7 +82,6 @@ import SupportMessage from './SupportMessage';
 User.hasMany(UserAccount, { foreignKey: "userId", as: "userAccounts", onDelete: "cascade", onUpdate: "cascade", hooks: true });
 User.hasOne(UserAccount, { foreignKey: "userId", as: "userAccount" });
 User.hasOne(UserProfile, { foreignKey: "userId", as: "userProfile", onDelete: 'cascade', onUpdate: "cascade", hooks: true });
-User.hasOne(SellerProfile, { foreignKey: "userId", as: "sellerProfile", onDelete: 'cascade', onUpdate: "cascade", hooks: true });
 
 Role.hasMany(RoleContent, { foreignKey: 'roleId', onDelete: "cascade", onUpdate: "cascade", hooks: true });
 Role.hasOne(RoleContent, { foreignKey: 'roleId', as: 'content' });
@@ -114,12 +90,6 @@ Role.hasOne(RoleContent, { foreignKey: 'roleId', as: 'defaultContent' });
 Permission.hasMany(PermissionContent, { foreignKey: 'permissionId', onDelete: "cascade", onUpdate: "cascade", hooks: true });
 Permission.hasOne(PermissionContent, { foreignKey: 'permissionId', as: 'content' });
 Permission.hasOne(PermissionContent, { foreignKey: 'permissionId', as: 'defaultContent' });
-
-Shop.hasMany(ShopContent, { foreignKey: 'shopId', as: "shopContents", onDelete: "cascade", onUpdate: "cascade", hooks: true });
-Shop.hasOne(ShopContent, { foreignKey: 'shopId', as: "content" });
-Shop.hasOne(ShopContent, { foreignKey: 'shopId', as: "defaultContent" });
-Shop.hasOne(Address, { foreignKey: 'shopId', as: "pickupAddress" });
-Shop.hasOne(Address, { foreignKey: 'shopId', as: "returnAddress" });
 
 Category.hasMany(Category, { foreignKey: "parentId", onDelete: 'cascade', hooks: true, as: 'children' });
 Category.hasMany(PermissionContent, { foreignKey: "categoryId", onDelete: 'cascade', hooks: true });
@@ -151,10 +121,6 @@ Post.hasOne(PostMedia,{foreignKey:'postId',as:'postVideo'}),
 Post.hasOne(PostContent,{foreignKey:'postId',as:'content'})
 Post.hasOne(PostContent,{foreignKey:'postId',as:'defaultContent'}),
 
-Document.hasMany(DocumentContent, { foreignKey: "documentId", onDelete: "cascade", onUpdate: "cascade" });
-Document.hasOne(DocumentContent, { foreignKey: "documentId", as: "content" });
-Document.hasOne(DocumentContent, { foreignKey: "documentId", as: "defaultContent" });
-
 
 Faq.belongsTo(User,{foreignKey:'userId',as:'author'});
 Faq.belongsTo(User,{foreignKey:'lastUpdatedBy',as:'updatedBy'});
@@ -162,8 +128,6 @@ Faq.belongsTo(Category,{foreignKey:'categoryId',as:'category'});
 
 FaqContent.belongsTo(Faq, {foreignKey: "faqId"});
 FaqContent.belongsTo(Language, { foreignKey: "languageId"});
-
-DocumentContent.belongsTo(Language, { foreignKey: "languageId"});
 
 CategoryTypeContent.belongsTo(CategoryType, {foreignKey: "categorytypeId"});
 CategoryTypeContent.belongsTo(Language, { foreignKey: "languageId"});
@@ -173,11 +137,6 @@ CategoryType.belongsTo(User,{foreignKey:'lastUpdatedBy',as:'updatedBy'});
 
 UserProfile.belongsTo(User, { foreignKey: 'userId' });
 UserProfile.belongsTo(Attachment, { foreignKey: "attachmentId", as: 'profileAttachment' });
-
-SellerProfile.belongsTo(User, { foreignKey: 'userId' });
-SellerProfile.belongsTo(Attachment, { foreignKey: "attachmentId", as: 'sellerAttachment' });
-
-UserDocument.belongsTo(Attachment, { foreignKey: "attachmentId", as: 'attachment' });
 
 Role.belongsTo(User, { foreignKey: 'userId', as: 'author' });
 Role.belongsTo(User, { foreignKey: 'lastUpdatedBy', as: 'updatedBy' });
@@ -223,13 +182,6 @@ PostMedia.belongsTo(Post, { foreignKey: "postId"});
 PostMedia.belongsTo(Language, { foreignKey: "languageId"});
 PostMedia.belongsTo(Attachment, {foreignKey: "fileId"});
 
-Shop.belongsTo(Attachment, { foreignKey: 'documentId', as: 'document' });
-Shop.belongsTo(BankDetail, { foreignKey: 'bankAccountId', as: 'bankDetails' });
-Shop.belongsTo(User, { foreignKey: 'userId', as: 'author' });
-Shop.belongsTo(User, { foreignKey: 'lastUpdatedBy', as: 'updatedBy' });
-ShopContent.belongsTo(Language, {foreignKey: "languageId"});
-
-
 EmailTemplate.belongsToMany(Attachment, { through: 'email_templates_attachment', foreignKey: "EmailTemplateId", otherKey: "attachmentId" });
 
 User.belongsToMany(Role, { through: "user_roles", foreignKey: "userId", otherKey: "roleId" });
@@ -252,53 +204,8 @@ AttributeOption.hasOne(AttributeOptionContent, {foreignKey: "attributeOptionId",
 AttributeOptionContent.belongsTo(AttributeOption, { foreignKey: "attributeOptionId" });
 AttributeOptionContent.belongsTo(Language, { foreignKey: "languageId" });
 
-
-Brand.hasMany(BrandContent, {foreignKey: "brandId", onDelete: "cascade", onUpdate: "cascade", hooks: true });
-Brand.hasOne(BrandContent, {foreignKey: "brandId", as: "content" });
-Brand.hasOne(BrandContent, {foreignKey: "brandId", as: "defaultContent"});
-Brand.belongsTo(Attachment, { foreignKey: 'attachmentId', as: "brandImage" })
-
-BrandContent.belongsTo(Brand, { foreignKey: "brandId" });
-BrandContent.belongsTo(Language, { foreignKey: "languageId" });
-
-Product.hasMany(ProductContent, {foreignKey: "productId", onDelete: "cascade", onUpdate: "cascade", hooks: true });
-Product.hasOne(ProductContent, {foreignKey: "productId", as: "content" });
-Product.hasOne(ProductContent, {foreignKey: "productId", as: "defaultContent"});
-
-Product.hasMany(ProductGallery, {foreignKey: "productId"});
-ProductGallery.belongsTo(Product, {foreignKey: "productId"});
-
-ProductGallery.belongsTo(Attachment, {foreignKey: "attachmentId", as: "productGallery"});
-
-Product.belongsTo(Attachment, { foreignKey: 'attachmentId', as: "productImage" })
-//Product.belongsTo(Store, { foreignKey: 'storeId', as: "productStore" })
-
-ProductContent.belongsTo(Product, { foreignKey: "productId" });
-ProductContent.belongsTo(Language, { foreignKey: "languageId" });
-
-
-Product.hasMany(ProductAttribute, {foreignKey: "productId"});
-ProductAttribute.belongsTo(Product, {foreignKey: "productId"});
-Product.hasMany(ProductKeyword, {foreignKey: "productId"});
-
-ProductAttribute.hasMany(ProductAttributeContent, {foreignKey: "productAttributeId", onDelete: "cascade", onUpdate: "cascade", hooks: true });
-ProductAttribute.hasOne(ProductAttributeContent, {foreignKey: "productAttributeId", as: "content" });
-ProductAttribute.hasOne(ProductAttributeContent, {foreignKey: "productAttributeId", as: "defaultContent"});
-
-ProductAttribute.belongsTo(Attribute, {foreignKey: "attributeId"});
-ProductAttributeContent.belongsTo(Language, {foreignKey: "languageId"});
-
-ProductKeyword.hasMany(ProductKeywordContent, {foreignKey: "productKeywordId", onDelete: "cascade", onUpdate: "cascade", hooks: true });
-ProductKeyword.hasOne(ProductKeywordContent, {foreignKey: "productKeywordId", as: "content" });
-ProductKeyword.hasOne(ProductKeywordContent, {foreignKey: "productKeywordId", as: "defaultContent"});
-
-ProductKeywordContent.belongsTo(Language, {foreignKey: "languageId"});
- 
-
 Attribute.belongsToMany(Category, { through: "attribute_categories", foreignKey: "attributeId", otherKey: "categoryId" });
-
 Category.belongsToMany(Attribute, { through: "attribute_categories", foreignKey: "categoryId", otherKey: "attributeId" });
-
 
 Attribute.hasMany(AttributeContent, {foreignKey: "attributeId", onDelete: "cascade", onUpdate: "cascade", hooks: true });
 Attribute.hasOne(AttributeContent, {foreignKey: "attributeId", as: "content" });
@@ -318,7 +225,6 @@ let Models = {
     Language,
     User,
     UserProfile,
-    SellerProfile,
     UserAccount,
     Permission,
     PermissionContent,
@@ -327,10 +233,7 @@ let Models = {
     Token,
     EmailTemplate,
     EmailTemplateContent,
-    Document,
     Address,
-    Shop,
-    ShopContent,
     CategoryType,
     CategoryTypeContent,
     Category,
@@ -340,24 +243,11 @@ let Models = {
     Post,
     PostContent,
     PostMedia,
-    DocumentContent,
-    UserDocument,
     AttributeOption,
     AttributeOptionContent,
-    Brand,
-    BrandContent,
-    Product,
-    ProductContent,
-    ProductAttribute,
-    ProductAttributeContent,
-    ProductGallery,
-    BankDetail,
-    ShopRequest,
     Notification,
     NotificationTemplate,
     NotificationTemplateContent,
-    ProductKeyword,
-    ProductKeywordContent,
     Attribute,
     AttributeContent,
     LostAndFound,

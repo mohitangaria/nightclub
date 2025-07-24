@@ -450,8 +450,6 @@ export const updateStatus = async (request: Hapi.RequestQuery, h: Hapi.ResponseT
 }
 
 export const sendMail = async (request: Hapi.Request, h: Hapi.ResponseToolkit) => {
-    // let email = await Common.sendEmail(["sachinkhanna@illuminz.com"], "noreply@illuminz.com", [], [], "Demo email", "content of mail", {}, [], 'en', 'email');
-    // return email;
     return true
 }
 
