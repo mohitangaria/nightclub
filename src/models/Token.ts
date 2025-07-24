@@ -18,6 +18,7 @@ let Token = sequelize.define<TokenInstance>(
     username: { type: DataTypes.STRING, allowNull: true, comment: "username for which token is valid" },
     countryCode: { type: DataTypes.STRING, allowNull: true, comment: "Country code" },
     mobile: { type: DataTypes.STRING, allowNull: true, comment: "Mobile No" },
+    dob: { type: DataTypes.STRING, allowNull: true, comment: "DOB" },
     userId: { type: DataTypes.INTEGER, allowNull: true, comment: "User identifier for which token has been generated" },
     accountId: { type: DataTypes.INTEGER, allowNull: true, comment: "User's account identifier for which token has been generated" },
     token: { type: DataTypes.TEXT, allowNull: false, comment: "Generated jwt token" },

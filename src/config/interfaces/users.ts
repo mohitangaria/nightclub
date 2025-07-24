@@ -30,6 +30,7 @@ interface UserProfileInterface {
     id?: number;
     userId?: number;
     name?: string;
+    dob?: string;
     referralCode?: string;
     attachmentId?: number | null;
     generalNotifications?: boolean | null;

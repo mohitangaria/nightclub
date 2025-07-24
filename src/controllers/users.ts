@@ -28,6 +28,7 @@ const appleKey = async(kid: string)=>{
 }
 
 interface UserPayload {
+    dob?: string | undefined;
     email: string;
     username: string;
     countryCode?: string;
@@ -231,13 +232,7 @@ const loginToken = async (userId: number, accountId: number | null, language: st
                 permissions
             }
             if(tokenRequired === true) {
-                const shops = [];
-                if(accountId) {
-                    const shopList = await Models.Shop.findAll({ where: { accountId } });
-                    for(let item of shopList) shops.push(item.id);
-                }
-
-                let token = Common.signToken({ id: id, name: user.userProfile?.name, accountId: accountId, email: email, countryCode: countryCode, mobile: mobile, createdAt: createdAt, updatedAt: updatedAt, status: status, timeStamp: timeStamp, applicationCode: process.env.APPLICATION_CODE, permissions: permissions, shops, type: 'authorizationToken' }, 'authorizationToken');
+                let token = Common.signToken({ id: id, name: user.userProfile?.name, accountId: accountId, email: email, countryCode: countryCode, mobile: mobile, createdAt: createdAt, updatedAt: updatedAt, status: status, timeStamp: timeStamp, applicationCode: process.env.APPLICATION_CODE, permissions: permissions, type: 'authorizationToken' }, 'authorizationToken');
                 let refreshToken = Common.signToken({ token: token, id: id, accountId: accountId, type: 'refreshToken' }, 'refreshToken');
                 if(token && refreshToken) {
                     returnObject["token"] = token
@@ -337,6 +332,7 @@ export const generateToken = async(payload: { [key: string]: any }, type: string
             email: payload.email, token: token, code: code,
             countryCode: payload.countryCode, mobile: payload.mobile,
             username: payload.username,
+            dob: payload.dob,
             status: Constants.STATUS.ACTIVE, type: type
         }, { transaction });
 
@@ -409,6 +405,7 @@ const createUser = async (payload: UserPayload, transaction: Sequelize.Transacti
             status: 1,
             userProfile: {
                 name: payload.name,
+                dob: payload.dob,
                 attachmentId: null
             }
         }, {
@@ -505,7 +502,7 @@ const sendOtp = async (countryCode: string, phoneNumber: string, otp: number | s
 export const signup = async (request: Hapi.RequestQuery, h: Hapi.ResponseToolkit) => {
     const transaction = await sequelize.transaction();
     try {
-        const { name, username, email, countryCode, mobile, password } = request.payload;
+        const { name, username, email, countryCode, mobile, password, dob } = request.payload;
         const responseData = { token: null };
 
         // Verify user credentials for signup requests
@@ -516,7 +513,7 @@ export const signup = async (request: Hapi.RequestQuery, h: Hapi.ResponseToolkit
         }
 
         // Generate a signup token for email verification 
-        const tokenData = await generateToken({ countryCode, mobile, email, password, name, username }, Constants.TOKEN_TYPES.SIGNUP, transaction);
+        const tokenData = await generateToken({ countryCode, mobile, email, password, name, username, dob }, Constants.TOKEN_TYPES.SIGNUP, transaction);
         if (tokenData.success !== true) {
             await transaction.rollback();
             return Common.generateError(request, 400, tokenData.message, {});
@@ -878,7 +875,7 @@ const verifySocialLogin = async (platform: string, accessToken: string, payloadE
           
         //   return false;
 
-            const data: any = await getFacebookUser({ token: accessToken, appId:"1561143174776812" });
+            const data: any = await getFacebookUser({ token: accessToken, appId:"xxxxxxxx" });
             if(data?.facebookEmail) {
                 const facebookEmail = data.facebookEmail;
                 if(facebookEmail === payloadEmail) return true;
@@ -1287,7 +1284,7 @@ export const updateUserProfile = async(request: Hapi.RequestQuery, h: Hapi.Respo
     try {
         const userId = request.auth.credentials.userData.id;
         console.log("userId=========>",userId)
-        const {name, attachmentId} = request.payload;
+        const {name, attachmentId, dob} = request.payload;
 
         const updateObject: any = {};
 
@@ -1304,6 +1301,7 @@ export const updateUserProfile = async(request: Hapi.RequestQuery, h: Hapi.Respo
         }
         
         if(name !== null) updateObject["name"] = name === "" ? null : name;
+        if(dob !== null) updateObject["dob"] = dob === "" ? null : dob;
 
         if(attachmentId !== null) {
             if(attachmentId !== "") {
@@ -1331,90 +1329,6 @@ export const updateUserProfile = async(request: Hapi.RequestQuery, h: Hapi.Respo
     }
 }
 
-export const updateSellerProfile = async(request: Hapi.RequestQuery, h: Hapi.ResponseToolkit) => {
-    const transaction = await sequelize.transaction();
-    try {
-        const userId = request.auth.credentials.userData.id;
-        const {name, contactEmail, contactPhone, contactCountryCode, storeUrl, socialMediaLink, attachmentId} = request.payload;
-
-        // const updateObject: any = {};
-
-        const userInfo = await Models.User.findOne({ where: { id: userId } });
-        if(!userInfo) {
-            await transaction.rollback();
-            return Common.generateError(request, 400, 'INVALID_USER', {});
-        }
-
-        const sellerInfo = await Models.SellerProfile.findOne({ where: { userId: userId } });
-        if(!sellerInfo) {
-            await transaction.rollback();
-            return Common.generateError(request, 400, 'INVALID_SELLER_PROFILE', {});
-        }
-
-        if(attachmentId !== null) {
-            const attachmentInfo = await Models.Attachment.findOne({ where: { id: attachmentId } });
-            if(!attachmentInfo) {
-                await transaction.rollback();
-                return Common.generateError(request, 400, 'INVALID_ATTACHMENT_PROVIDED', {});
-            }
-        }
-
-        await sellerInfo.update({name, currentStatus: Constants.SELLER_STATUS.CREATED_REQUEST, contactEmail, contactPhone, contactCountryCode, storeUrl, socialMediaLink, attachmentId}, { transaction });
-        await transaction.commit();
-        await createSearchIndex(userId!);
-        const userAccountInfo = await Models.UserAccount.findOne({ where: { userId: userInfo.id } });
-        const accountId = userAccountInfo ? userAccountInfo.accountId : null;
-        const responseData = await loginToken(userId, accountId, request.headers.language, null, false)
-
-        return h.response({message:request.i18n.__("REQUEST_SUCCESSFULL"),responseData: responseData}).code(200);
-    } catch (error) {
-        await transaction.rollback();
-        return Common.generateError(request, 500, 'SOMETHING_WENT_WRONG_WITH_EXCEPTION', error);
-    }
-}
-
-export const createSellerProfile = async(request: Hapi.RequestQuery, h: Hapi.ResponseToolkit) => {
-    const transaction = await sequelize.transaction();
-    try {
-        const userId = request.auth.credentials.userData.id;
-        const {name, contactEmail, contactPhone, contactCountryCode, storeUrl, socialMediaLink, attachmentId} = request.payload;
-        const code = "seller";
-
-        const userInfo = await Models.User.findOne({ where: { id: userId } });
-        if(!userInfo) {
-            await transaction.rollback();
-            return Common.generateError(request, 400, 'INVALID_USER', {});
-        }
-
-
-        const sellerInfo = await Models.SellerProfile.findOne({ where: { userId: userId } });
-        if(sellerInfo) {
-            await transaction.rollback();
-            return Common.generateError(request, 400, 'PROFILE_ALREADY_EXISTS', {});
-        }
-
-        const sellerRoleInfo = await Models.Role.findOne({ where: { code: code } });
-        if(!sellerRoleInfo) {
-            await transaction.rollback();
-            return Common.generateError(request, 400, 'ROLE_NOT_FOUND', {});
-        }
-        await userInfo.setRoles([sellerRoleInfo!.id], { transaction });
-
-        await Models.SellerProfile.create({ userId: userInfo.id, hasSellerAccount: true, name: name, status: Constants.STATUS.ACTIVE, contactEmail, storeUrl, socialMediaLink, attachmentId, contactPhone, contactCountryCode, currentStatus: Constants.SELLER_STATUS.CREATED_REQUEST }, { transaction });
-
-        await transaction.commit();
-        await createSearchIndex(userId!);
-        const userAccountInfo = await Models.UserAccount.findOne({ where: { userId: userInfo.id } });
-        const accountId = userAccountInfo ? userAccountInfo.accountId : null;
-        const responseData = await loginToken(userId, accountId, request.headers.language, null, true);
-
-        return h.response({message:request.i18n.__("REQUEST_SUCCESSFULL"),responseData: responseData}).code(200);
-    } catch (error) {
-        await transaction.rollback();
-        return Common.generateError(request, 500, 'SOMETHING_WENT_WRONG_WITH_EXCEPTION', error);   
-    }
-}
-
 export const changeStatus = async(request: Hapi.RequestQuery, h: Hapi.ResponseToolkit) => {
     const transaction = await sequelize.transaction();
     try {
@@ -1433,71 +1347,6 @@ export const changeStatus = async(request: Hapi.RequestQuery, h: Hapi.ResponseTo
 
         const responseData = await loginToken(userId, null, request.headers.language, null, false);
 
-        return h.response({message:request.i18n.__("REQUEST_SUCCESSFULL"),responseData: responseData}).code(200);
-    } catch (error) {
-        await transaction.rollback();
-        return Common.generateError(request, 500, 'SOMETHING_WENT_WRONG_WITH_EXCEPTION', error);   
-    }
-}
-
-export const approveAccount = async(request: Hapi.RequestQuery, h: Hapi.ResponseToolkit) => {
-    const transaction = await sequelize.transaction();
-    try {
-        const userId = request.params.id;
-        const status = request.payload.status;
-        const comment = request.payload.comment;
-
-        // 0 - pending | 1 - approved | 2 -rejected | 3 - preapproved
-        const userInfo = await Models.User.findOne({ where: { id: userId } });
-        if(!userInfo) {
-            await transaction.rollback();
-            return Common.generateError(request, 400, 'INVALID_USER', {});
-        }
-
-        const sellerInfo = await Models.SellerProfile.findOne({ where: { userId: userId } });
-        if(!sellerInfo) {
-            await transaction.rollback();
-            return Common.generateError(request, 400, 'INVALID_SELLER', {});
-        }
-        
-        if(status === 0) {
-            await sellerInfo.update({ status: 0, isVerifiedProfile: false, comment, currentStatus: Constants.SELLER_STATUS.CREATED_REQUEST }, { transaction });
-        } else if(status === 1) {
-            await sellerInfo.update({ status: 1, isVerifiedProfile: true, comment, currentStatus: Constants.SELLER_STATUS.ACCOUNT_APPROVED }, { transaction });
-        } else if(status === 2) {
-            await sellerInfo.update({ status: 2, isVerifiedProfile: false, comment, currentStatus: Constants.SELLER_STATUS.ACCOUNT_REJECTED }, { transaction });
-        } else if(status === 3) {
-            await sellerInfo.update({ status: 0, isVerifiedProfile: false, comment, currentStatus: Constants.SELLER_STATUS.PRE_APPROVED }, { transaction });
-        }
-
-        await transaction.commit();
-
-        {
-            if(status === 3) {
-                const userInfo = await Models.User.findOne({ where: { id: userId  }, include: [{ model: Models.UserProfile, as: "userProfile" }] });
-                if(userInfo) {
-                    let emailReplacements = { name: userInfo.userProfile?.name, link: process.env.SELLER_DOMAIN }
-                    await sendEmail("account_pre_approval", emailReplacements, [userInfo.email], request.headers.language);
-                }
-            }
-            if(status === 2) {
-                const userInfo = await Models.User.findOne({ where: { id: userId  }, include: [{ model: Models.UserProfile, as: "userProfile" }] });
-                if(userInfo) {
-                    let emailReplacements = { name: userInfo.userProfile?.name, link: process.env.SELLER_DOMAIN, reason: comment }
-                    await sendEmail("account_rejected", emailReplacements, [userInfo.email], request.headers.language);
-                }
-            }
-            if(status === 1) {
-                const userInfo = await Models.User.findOne({ where: { id: userId  }, include: [{ model: Models.UserProfile, as: "userProfile" }] });
-                if(userInfo) {
-                    let emailReplacements = { name: userInfo.userProfile?.name, link: process.env.SELLER_DOMAIN }
-                    await sendEmail("account_approved", emailReplacements, [userInfo.email], request.headers.language);
-                }
-            }
-        }
-
-
-        const responseData = await loginToken(userId, null, request.headers.language, null, false);
         return h.response({message:request.i18n.__("REQUEST_SUCCESSFULL"),responseData: responseData}).code(200);
     } catch (error) {
         await transaction.rollback();
@@ -1730,62 +1579,6 @@ export const resendCode = async(request: Hapi.RequestQuery, h: Hapi.ResponseTool
     }
 }
 
-export const generateShopRequest = async(request: Hapi.RequestQuery, h: Hapi.ResponseToolkit) => {
-    const transaction = await sequelize.transaction();
-    try {
-        const userId = request.auth.credentials.userData.id;
-        const accountId = request.auth.credentials.userData.accountId;
-        const requestObject = request.payload;
-
-        const sellerProfile = await Models.SellerProfile.findOne({ where: { userId: accountId } });
-        if(!sellerProfile) {
-            await transaction.rollback();
-            return Common.generateError(request, 400, 'INVALID_SELLER_PROVIDED', {});
-        }
-        const shopName = sellerProfile.name;
-
-        if(shopName !== request.payload.businessName) {
-            requestObject["businessName"] = shopName;
-        }
-
-        let requestExists = await Models.ShopRequest.findOne({ where: {shopName, accountId} });
-        if(requestExists) {
-            requestExists = await requestExists.update({ requestObject }, { transaction });
-        } else {
-            requestExists = await Models.ShopRequest.create({ userId, accountId, requestObject, shopName }, { transaction })
-        }
-
-        await sellerProfile.update({ currentStatus: Constants.SELLER_STATUS.DOC_DETAILS_SUBMITTED }, { transaction });
-
-        await transaction.commit();
-        return h.response({ message: request.i18n.__("REQUEST_SUCCESSFULL"), responseData: requestExists }).code(200)
-    } catch (error) {
-        await transaction.rollback();
-        return Common.generateError(request, 500, 'SOMETHING_WENT_WRONG_WITH_EXCEPTION', error);
-    }
-}
-
-export const documentFieldRequest = async(request: Hapi.RequestQuery, h: Hapi.ResponseToolkit) => {
-    try {
-        const userId = request.params.id;
-        let responseData = {};
-
-        const docInfo = await Models.UserDocument.findOne({ where: { userId: userId, isRevision: false } });
-        if(docInfo) {
-            responseData = docInfo.agreement!;
-        } else {
-            const sellerFields = await Models.ShopRequest.findOne({ where: { userId } });
-            if(sellerFields) {
-                responseData = sellerFields.requestObject;
-            }
-        }
-
-        return h.response({ message: request.i18n.__("REQUEST_SUCCESSFULL"), responseData: responseData }).code(200)
-    } catch (error) {
-        return Common.generateError(request, 500, 'SOMETHING_WENT_WRONG_WITH_EXCEPTION', error);
-    }
-}
-
 // Generate new token using previously shared token and refresh token
 export const refreshToken=async(request: Hapi.RequestQuery, h: Hapi.ResponseToolkit)=>{
     try{
@@ -1806,7 +1599,6 @@ export const refreshToken=async(request: Hapi.RequestQuery, h: Hapi.ResponseTool
         return Common.generateError(request, 500, 'SOMETHING_WENT_WRONG_WITH_EXCEPTION', error);
     }
 }
-
 
 
 export const updateUserSettings = async(request: Hapi.RequestQuery, h: Hapi.ResponseToolkit) => {
