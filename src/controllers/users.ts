@@ -39,7 +39,7 @@ interface UserPayload {
 }
 
 const userAttributes = ['id', 'email', 'countryCode', 'mobile', 'createdAt', 'updatedAt', 'status'];
-let UserProfileAttributes: AttributeElement[] = ['name', 'generalNotifications', 'paymentNotifications', 'reminderNotifications',
+let UserProfileAttributes: AttributeElement[] = ['name', 'dob', 'generalNotifications', 'paymentNotifications', 'reminderNotifications',
 // [sequelize.fn('CONCAT', process.env.BASE_URL, "/attachment/", sequelize.literal('`userProfile->profileAttachment`.`unique_name`')), 'profileImage']
 [
     sequelize.literal(
@@ -1183,7 +1183,7 @@ export const userslist = async (request: Hapi.RequestQuery, h: Hapi.ResponseTool
             attributes:[ 'id', 'username', 'email', 'mobile', 'countryCode', 'createdAt', 'updatedAt', 'status'],
             include:[
                 {
-                    attributes:["id","name", "attachmentId", "referralCode", "userId"],
+                    attributes:["id","name", "dob", "attachmentId", "referralCode", "userId"],
                     // where: profileWhere,
                     model:Models.UserProfile, as: "userProfile",
                     include:[
